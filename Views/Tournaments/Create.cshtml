@@ -29,6 +29,23 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Type" class="form-label">Тип турнира *</label>
+                                <select asp-for="Type" class="form-select" asp-items="Html.GetEnumSelectList<TournamentApp.Models.Tournament.TournamentType>()"></select>
+                                <span asp-validation-for="Type" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Gender" class="form-label">Категория (Пол) *</label>
+                                <select asp-for="Gender" class="form-select" asp-items="Html.GetEnumSelectList<TournamentApp.Models.Tournament.TeamGender>()"></select>
+                                <span asp-validation-for="Gender" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="mb-3">
                         <label asp-for="MatchesPerOpponent" class="form-label">Количество встреч между участниками *</label>

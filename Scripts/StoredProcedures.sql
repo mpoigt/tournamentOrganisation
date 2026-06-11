@@ -4,7 +4,7 @@ AS
 BEGIN
     SELECT 
         t.Id, t.Name, t.StartDate, t.EndDate, t.Description, 
-        t.MatchesPerOpponent, t.IsCompleted, t.PlayoffGenerated, t.WinnerId, t.CreatedAt,
+        t.MatchesPerOpponent, t.Type, t.Gender, t.IsCompleted, t.PlayoffGenerated, t.WinnerId, t.CreatedAt,
         p.Id as ParticipantId, p.Name as ParticipantName, p.Email as ParticipantEmail, 
         p.Phone as ParticipantPhone, p.CreatedAt as ParticipantCreatedAt,
         tp.JoinedAt,
@@ -22,23 +22,20 @@ CREATE OR ALTER PROCEDURE sp_GetTournamentById
     @TournamentId INT
 AS
 BEGIN
-
     SELECT 
         t.Id, t.Name, t.StartDate, t.EndDate, t.Description, 
-        t.MatchesPerOpponent, t.IsCompleted, t.PlayoffGenerated, t.WinnerId, t.CreatedAt,
+        t.MatchesPerOpponent, t.Type, t.Gender, t.IsCompleted, t.PlayoffGenerated, t.WinnerId, t.CreatedAt,
         pw.Name as WinnerName
     FROM Tournaments t
     LEFT JOIN Participants pw ON t.WinnerId = pw.Id
     WHERE t.Id = @TournamentId
     
-
     SELECT DISTINCT
         p.Id, p.Name, p.Email, p.Phone, p.CreatedAt, tp.JoinedAt, tp.TeamName
     FROM TournamentParticipants tp
     INNER JOIN Participants p ON tp.ParticipantId = p.Id
     WHERE tp.TournamentId = @TournamentId
     
-
     SELECT 
         MatchId as Id, TournamentId, HomeParticipantId, AwayParticipantId,
         HomeScore, AwayScore, PlayedAt, IsCompleted, Type, MatchCreatedAt as CreatedAt,
@@ -54,13 +51,15 @@ CREATE OR ALTER PROCEDURE sp_CreateTournament
     @StartDate DATETIME,
     @EndDate DATETIME = NULL,
     @Description NVARCHAR(MAX) = NULL,
-    @MatchesPerOpponent INT = 1
+    @MatchesPerOpponent INT = 1,
+    @Type INT,
+    @Gender INT
 AS
 BEGIN
     DECLARE @TournamentId INT
     
-    INSERT INTO Tournaments (Name, StartDate, EndDate, Description, MatchesPerOpponent, IsCompleted, PlayoffGenerated, CreatedAt)
-    VALUES (@Name, @StartDate, @EndDate, @Description, @MatchesPerOpponent, 0, 0, GETDATE())
+    INSERT INTO Tournaments (Name, StartDate, EndDate, Description, MatchesPerOpponent, Type, Gender, IsCompleted, PlayoffGenerated, CreatedAt)
+    VALUES (@Name, @StartDate, @EndDate, @Description, @MatchesPerOpponent, @Type, @Gender, 0, 0, GETDATE())
     
     SET @TournamentId = SCOPE_IDENTITY()
     

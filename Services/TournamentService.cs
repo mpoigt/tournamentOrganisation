@@ -52,6 +52,8 @@ namespace TournamentApp.Services
                         PlayoffGenerated = reader.GetBoolean("PlayoffGenerated"),
                         WinnerId = reader.IsDBNull("WinnerId") ? null : reader.GetInt32("WinnerId"),
                         CreatedAt = reader.GetDateTime("CreatedAt"),
+                        Type = (Tournament.TournamentType)reader.GetInt32("Type"),
+                        Gender = (Tournament.TeamGender)reader.GetInt32("Gender"),
                         TournamentParticipants = new List<TournamentParticipant>()
                     };
 
@@ -144,6 +146,8 @@ namespace TournamentApp.Services
                     PlayoffGenerated = reader.GetBoolean("PlayoffGenerated"),
                     WinnerId = reader.IsDBNull("WinnerId") ? null : reader.GetInt32("WinnerId"),
                     CreatedAt = reader.GetDateTime("CreatedAt"),
+                    Type = (Tournament.TournamentType)reader.GetInt32("Type"),
+                    Gender = (Tournament.TeamGender)reader.GetInt32("Gender"),
                     TournamentParticipants = new List<TournamentParticipant>(),
                     Matches = new List<Match>()
                 };
@@ -264,6 +268,8 @@ namespace TournamentApp.Services
                 createCommand.Parameters.AddWithValue("@EndDate", (object?)tournament.EndDate ?? DBNull.Value);
                 createCommand.Parameters.AddWithValue("@Description", (object?)tournament.Description ?? DBNull.Value);
                 createCommand.Parameters.AddWithValue("@MatchesPerOpponent", tournament.MatchesPerOpponent);
+                createCommand.Parameters.AddWithValue("@Type", (int)tournament.Type);
+                createCommand.Parameters.AddWithValue("@Gender", (int)tournament.Gender);
 
                 using var reader = await createCommand.ExecuteReaderAsync();
                 await reader.ReadAsync();
