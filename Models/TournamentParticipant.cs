@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 namespace TournamentApp.Models
 {
     public class TournamentParticipant
@@ -9,5 +10,8 @@ namespace TournamentApp.Models
         public Participant Participant { get; set; } = null!;
         
         public DateTime JoinedAt { get; set; } = DateTime.Now;
+
+        [Required(ErrorMessage = "Название команды обязательно")]
+        public string TeamName { get; set; } = string.Empty;
     }
 } 

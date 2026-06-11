@@ -11,7 +11,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="text-center">Матчи турнира</h1>
-        <h4 class="text-muted text-center">@tournament.Name</h4>
+        <h4 class="text-muted text-center">@tournament?.Name</h4>
     </div>
     <div>
         @if (!tournament.PlayoffGenerated && groupMatches.Any(m => m.IsCompleted))

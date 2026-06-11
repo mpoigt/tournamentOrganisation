@@ -6,7 +6,7 @@ namespace TournamentApp.Services
     {
         Task<List<Tournament>> GetAllTournamentsAsync();
         Task<Tournament?> GetTournamentByIdAsync(int id);
-        Task<Tournament> CreateTournamentAsync(Tournament tournament, List<int> participantIds);
+        Task<Tournament> CreateTournamentAsync(Tournament tournament, List<int> participantIds, Dictionary<int, string> teamNames);
         Task<bool> UpdateTournamentAsync(int id, Tournament tournament);
         Task<bool> DeleteTournamentAsync(int id);
         Task<List<Match>> GetTournamentMatchesAsync(int tournamentId);

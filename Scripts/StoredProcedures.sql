@@ -33,7 +33,7 @@ BEGIN
     
 
     SELECT DISTINCT
-        p.Id, p.Name, p.Email, p.Phone, p.CreatedAt, tp.JoinedAt
+        p.Id, p.Name, p.Email, p.Phone, p.CreatedAt, tp.JoinedAt, tp.TeamName
     FROM TournamentParticipants tp
     INNER JOIN Participants p ON tp.ParticipantId = p.Id
     WHERE tp.TournamentId = @TournamentId
@@ -69,27 +69,19 @@ END
 GO
 
 
-CREATE OR ALTER PROCEDURE sp_AddTournamentParticipants
+CREATE OR ALTER PROCEDURE sp_AddSingleTournamentParticipant
     @TournamentId INT,
-    @ParticipantIds NVARCHAR(MAX)
+    @ParticipantId INT,
+    @TeamName NVARCHAR(100) 
 AS
 BEGIN
-    DECLARE @ParticipantId INT
-    DECLARE @Pos INT = 1
-    DECLARE @NextPos INT
-    
-    WHILE @Pos <= LEN(@ParticipantIds)
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (SELECT 1 FROM TournamentParticipants 
+                   WHERE TournamentId = @TournamentId AND ParticipantId = @ParticipantId)
     BEGIN
-        SET @NextPos = CHARINDEX(',', @ParticipantIds, @Pos)
-        IF @NextPos = 0
-            SET @NextPos = LEN(@ParticipantIds) + 1
-            
-        SET @ParticipantId = CAST(SUBSTRING(@ParticipantIds, @Pos, @NextPos - @Pos) AS INT)
-        
-        INSERT INTO TournamentParticipants (TournamentId, ParticipantId, JoinedAt)
-        VALUES (@TournamentId, @ParticipantId, GETDATE())
-        
-        SET @Pos = @NextPos + 1
+        INSERT INTO TournamentParticipants (TournamentId, ParticipantId, JoinedAt, TeamName)
+        VALUES (@TournamentId, @ParticipantId, GETDATE(), @TeamName);
     END
 END
 GO

@@ -28,8 +28,13 @@ namespace TournamentApp.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Tournament tournament, List<int> participantIds)
+        public async Task<IActionResult> Create(Tournament tournament, List<int> participantIds, Dictionary<int, string> teamNames)
         {
+            if (string.IsNullOrWhiteSpace(tournament.Name))
+            {
+                tournament.Name = tournament.StartDate.ToString("dd.MM.yyyy");
+            }
+
             if (ModelState.IsValid)
             {
                 if (participantIds == null || participantIds.Count < 3 || participantIds.Count > 5)
@@ -39,10 +44,10 @@ namespace TournamentApp.Controllers
                     ViewBag.Participants = participants;
                     return View(tournament);
                 }
-                
+
                 try
                 {
-                    await _tournamentService.CreateTournamentAsync(tournament, participantIds);
+                    await _tournamentService.CreateTournamentAsync(tournament, participantIds, teamNames);
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
@@ -50,12 +55,12 @@ namespace TournamentApp.Controllers
                     ModelState.AddModelError("", "Ошибка при создании турнира: " + ex.Message);
                 }
             }
-            
+
             var allParticipants = await _tournamentService.GetAllParticipantsAsync();
             ViewBag.Participants = allParticipants;
             return View(tournament);
         }
-        
+
         public async Task<IActionResult> Details(int id)
         {
             var tournament = await _tournamentService.GetTournamentByIdAsync(id);
@@ -116,7 +121,7 @@ namespace TournamentApp.Controllers
             {
                 return NotFound();
             }
-            
+
             if (ModelState.IsValid)
             {
                 var success = await _tournamentService.UpdateTournamentAsync(id, tournament);
@@ -129,12 +134,12 @@ namespace TournamentApp.Controllers
                     return NotFound();
                 }
             }
-            
+
             var participants = await _tournamentService.GetAllParticipantsAsync();
             ViewBag.Participants = participants;
             return View(tournament);
         }
-        
+
         public async Task<IActionResult> Delete(int id)
         {
             try

@@ -1,6 +1,11 @@
 @{
     ViewData["Title"] = "Редактировать матч";
     var match = ViewBag.Match as TournamentApp.Models.Match;
+    var tournament = ViewBag.Tournament as TournamentApp.Models.Tournament;
+    
+    // Ищем названия команд для хозяев и гостей
+    var homeTeam = tournament?.TournamentParticipants?.FirstOrDefault(tp => tp.ParticipantId == match.HomeParticipantId)?.TeamName;
+    var awayTeam = tournament?.TournamentParticipants?.FirstOrDefault(tp => tp.ParticipantId == match.AwayParticipantId)?.TeamName;
 }
 
 <style>
@@ -23,7 +28,7 @@
         <div class="card">
             <div class="card-header">
                 <h2>Результат матча</h2>
-                <h5 class="text-muted">@match.Tournament.Name</h5>
+                <h5 class="text-muted">@match?.Tournament.Name</h5>
             </div>
             <div class="card-body">
                 <form asp-action="Edit" method="post">
@@ -36,8 +41,9 @@
                     <div class="row align-items-end">
                         <div class="col-5">
                             <div class="text-center">
-                                <div class="participant-name-box mb-2">
+                                <div class="participant-name-box flex-column mb-2">
                                     <h5 class="mb-0">@match.HomeParticipant.Name</h5>
+                                    <span class="badge bg-light text-dark border mt-1">@(homeTeam ?? "Без команды")</span>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Счет</label>
@@ -52,8 +58,9 @@
                         </div>
                         <div class="col-5">
                             <div class="text-center">
-                                <div class="participant-name-box mb-2">
+                                <div class="participant-name-box flex-column mb-2">
                                     <h5 class="mb-0">@match.AwayParticipant.Name</h5>
+                                    <span class="badge bg-light text-dark border mt-1">@(awayTeam ?? "Без команды")</span>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Счет</label>
@@ -104,4 +111,4 @@
             }
         });
     </script>
-} 
+}

@@ -189,7 +189,8 @@ namespace TournamentApp.Services
                         ParticipantId = participant.Id,
                         Participant = participant,
                         Tournament = tournament,
-                        JoinedAt = reader.GetDateTime("JoinedAt")
+                        JoinedAt = reader.GetDateTime("JoinedAt"),
+                        TeamName = reader.IsDBNull("TeamName") ? "Без команды" : reader.GetString("TeamName")
                     };
 
                     tournament.TournamentParticipants.Add(tournamentParticipant);
@@ -245,7 +246,7 @@ namespace TournamentApp.Services
             return tournament;
         }
 
-        public async Task<Tournament> CreateTournamentAsync(Tournament tournament, List<int> participantIds)
+        public async Task<Tournament> CreateTournamentAsync(Tournament tournament, List<int> participantIds, Dictionary<int, string> teamNames)
         {
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
@@ -270,13 +271,22 @@ namespace TournamentApp.Services
                 reader.Close();
 
 
-                using var participantsCommand = new SqlCommand("sp_AddTournamentParticipants", connection, transaction)
+                foreach (var pId in participantIds)
                 {
-                    CommandType = CommandType.StoredProcedure
-                };
-                participantsCommand.Parameters.AddWithValue("@TournamentId", tournament.Id);
-                participantsCommand.Parameters.AddWithValue("@ParticipantIds", string.Join(",", participantIds));
-                await participantsCommand.ExecuteNonQueryAsync();
+                    string teamName = teamNames.ContainsKey(pId) && !string.IsNullOrWhiteSpace(teamNames[pId])
+                        ? teamNames[pId]
+                        : "Без команды";
+
+                    using var participantsCommand = new SqlCommand("sp_AddSingleTournamentParticipant", connection, transaction)
+                    {
+                        CommandType = CommandType.StoredProcedure
+                    };
+                    participantsCommand.Parameters.AddWithValue("@TournamentId", tournament.Id);
+                    participantsCommand.Parameters.AddWithValue("@ParticipantId", pId);
+                    participantsCommand.Parameters.AddWithValue("@TeamName", teamName);
+
+                    await participantsCommand.ExecuteNonQueryAsync();
+                }
 
 
                 using var matchesCommand = new SqlCommand("sp_CreateTournamentMatches", connection, transaction)

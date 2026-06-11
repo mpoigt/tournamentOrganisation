@@ -5,18 +5,23 @@ namespace TournamentApp.Models
     public class Tournament
     {
         public int Id { get; set; }
-        
-        [Required(ErrorMessage = "Название турнира обязательно")]
+
         [StringLength(100, ErrorMessage = "Название не может быть длиннее 100 символов")]
-        public string Name { get; set; } = string.Empty;
+        public string? Name { get; set; }
         
         [Required(ErrorMessage = "Дата начала обязательна")]
         public DateTime StartDate { get; set; } = DateTime.Today;
-        
+
         public DateTime? EndDate { get; set; }
-        
+
         public string? Description { get; set; }
-        
+
+        [Required(ErrorMessage = "Выберите тип турнира")]
+        public TournamentType Type { get; set; }
+
+        [Required(ErrorMessage = "Выберите тип команды")]
+        public TeamGender Gender { get; set; }
+
         [Required(ErrorMessage = "Количество встреч между участниками обязательно")]
         [Range(1, 5, ErrorMessage = "Количество встреч должно быть от 1 до 5")]
         public int MatchesPerOpponent { get; set; } = 1;
@@ -32,5 +37,26 @@ namespace TournamentApp.Models
         public ICollection<TournamentParticipant> TournamentParticipants { get; set; } = new List<TournamentParticipant>();
         public ICollection<Match> Matches { get; set; } = new List<Match>();
         public Participant? Winner { get; set; }
+
+        public enum TournamentType
+        {
+            [Display(Name = "5 на 5")]
+            FiveVsFive,
+
+            [Display(Name = "5 на 5 с большими")]
+            FiveVsFiveBig,
+
+            [Display(Name = "11 на 11")]
+            ElevenVsEleven
+        }
+
+        public enum TeamGender
+        {
+            [Display(Name = "Мужчины")]
+            Men,
+
+            [Display(Name = "Женщины")]
+            Women
+        }
     }
 } 
