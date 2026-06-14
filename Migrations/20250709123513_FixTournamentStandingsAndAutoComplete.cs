@@ -57,11 +57,11 @@ namespace TournamentApp.Migrations
 
             // Пересоздаем процедуру автозавершения турнира
             migrationBuilder.Sql(@"
-                DROP PROCEDURE IF EXISTS sp_AutoCompleteTournament;
+                DROP PROCEDURE IF EXISTS AutoCompleteTournament;
             ");
 
             migrationBuilder.Sql(@"
-                CREATE PROCEDURE sp_AutoCompleteTournament
+                CREATE PROCEDURE AutoCompleteTournament
                     @TournamentId INT
                 AS
                 BEGIN
@@ -145,7 +145,7 @@ namespace TournamentApp.Migrations
                         
                         WHILE @@FETCH_STATUS = 0
                         BEGIN
-                            EXEC sp_AutoCompleteTournament @TournamentId;
+                            EXEC AutoCompleteTournament @TournamentId;
                             FETCH NEXT FROM tournament_cursor INTO @TournamentId;
                         END
                         
@@ -164,7 +164,7 @@ namespace TournamentApp.Migrations
             ");
 
             migrationBuilder.Sql(@"
-                DROP PROCEDURE IF EXISTS sp_AutoCompleteTournament;
+                DROP PROCEDURE IF EXISTS AutoCompleteTournament;
             ");
 
             migrationBuilder.Sql(@"

@@ -37,9 +37,9 @@ namespace TournamentApp.Controllers
 
             if (ModelState.IsValid)
             {
-                if (participantIds == null || participantIds.Count < 3 || participantIds.Count > 5)
+                if (participantIds == null || participantIds.Count < 2 || participantIds.Count > 6)
                 {
-                    ModelState.AddModelError("", "Выберите от 3 до 5 участников");
+                    ModelState.AddModelError("", "Выберите от 2 до 6 участников");
                     var participants = await _tournamentService.GetAllParticipantsAsync();
                     ViewBag.Participants = participants;
                     return View(tournament);

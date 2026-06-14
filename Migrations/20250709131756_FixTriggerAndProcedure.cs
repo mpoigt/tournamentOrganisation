@@ -18,7 +18,7 @@ namespace TournamentApp.Migrations
             ");
 
             migrationBuilder.Sql(@"
-                CREATE OR ALTER PROCEDURE sp_AutoCompleteTournament
+                CREATE OR ALTER PROCEDURE AutoCompleteTournament
                     @TournamentId INT
                 AS
                 BEGIN
@@ -90,7 +90,7 @@ namespace TournamentApp.Migrations
                         
                         WHILE @@FETCH_STATUS = 0
                         BEGIN
-                            EXEC sp_AutoCompleteTournament @TournamentId;
+                            EXEC AutoCompleteTournament @TournamentId;
                             FETCH NEXT FROM tournament_cursor INTO @TournamentId;
                         END
                         

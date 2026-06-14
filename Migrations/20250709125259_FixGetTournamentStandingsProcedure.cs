@@ -10,9 +10,9 @@ namespace TournamentApp.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Исправляем процедуру sp_GetTournamentStandings
+            // Исправляем процедуру GetTournamentStandings
             migrationBuilder.Sql(@"
-                CREATE OR ALTER PROCEDURE sp_GetTournamentStandings
+                CREATE OR ALTER PROCEDURE GetTournamentStandings
                     @TournamentId INT
                 AS
                 BEGIN
@@ -39,7 +39,7 @@ namespace TournamentApp.Migrations
         {
             // Возвращаем старую версию процедуры
             migrationBuilder.Sql(@"
-                CREATE OR ALTER PROCEDURE sp_GetTournamentStandings
+                CREATE OR ALTER PROCEDURE GetTournamentStandings
                     @TournamentId INT
                 AS
                 BEGIN

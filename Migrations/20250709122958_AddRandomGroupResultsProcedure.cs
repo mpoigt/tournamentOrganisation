@@ -10,7 +10,7 @@ namespace TournamentApp.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"
-                CREATE OR ALTER PROCEDURE sp_GenerateRandomGroupResults
+                CREATE OR ALTER PROCEDURE GenerateRandomGroupResults
                     @TournamentId INT
                 AS
                 BEGIN
@@ -57,7 +57,7 @@ namespace TournamentApp.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"
-                DROP PROCEDURE IF EXISTS sp_GenerateRandomGroupResults;
+                DROP PROCEDURE IF EXISTS GenerateRandomGroupResults;
             ");
         }
     }

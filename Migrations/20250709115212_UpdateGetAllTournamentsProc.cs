@@ -10,7 +10,7 @@ namespace TournamentApp.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"
-                CREATE OR ALTER PROCEDURE sp_GetAllTournaments
+                CREATE OR ALTER PROCEDURE GetAllTournaments
                 AS
                 BEGIN
                     SELECT 
