@@ -9,8 +9,8 @@ namespace TournamentApp.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"
-                -- Обновление процедуры sp_DeleteTournament
-                CREATE OR ALTER PROCEDURE sp_DeleteTournament
+                -- Обновление процедуры DeleteTournament
+                CREATE OR ALTER PROCEDURE DeleteTournament
                     @TournamentId INT
                 AS
                 BEGIN
@@ -48,8 +48,8 @@ namespace TournamentApp.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"
-                -- Возврат к старой версии процедуры sp_DeleteTournament
-                CREATE OR ALTER PROCEDURE sp_DeleteTournament
+                -- Возврат к старой версии процедуры DeleteTournament
+                CREATE OR ALTER PROCEDURE DeleteTournament
                     @TournamentId INT
                 AS
                 BEGIN

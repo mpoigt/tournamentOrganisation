@@ -28,7 +28,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_GetAllTournaments", connection)
+            using var command = new SqlCommand("GetAllTournaments", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -52,6 +52,8 @@ namespace TournamentApp.Services
                         PlayoffGenerated = reader.GetBoolean("PlayoffGenerated"),
                         WinnerId = reader.IsDBNull("WinnerId") ? null : reader.GetInt32("WinnerId"),
                         CreatedAt = reader.GetDateTime("CreatedAt"),
+                        Type = (Tournament.TournamentType)reader.GetInt32("Type"),
+                        Gender = (Tournament.TeamGender)reader.GetInt32("Gender"),
                         TournamentParticipants = new List<TournamentParticipant>()
                     };
 
@@ -119,7 +121,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_GetTournamentById", connection)
+            using var command = new SqlCommand("GetTournamentById", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -144,6 +146,8 @@ namespace TournamentApp.Services
                     PlayoffGenerated = reader.GetBoolean("PlayoffGenerated"),
                     WinnerId = reader.IsDBNull("WinnerId") ? null : reader.GetInt32("WinnerId"),
                     CreatedAt = reader.GetDateTime("CreatedAt"),
+                    Type = (Tournament.TournamentType)reader.GetInt32("Type"),
+                    Gender = (Tournament.TeamGender)reader.GetInt32("Gender"),
                     TournamentParticipants = new List<TournamentParticipant>(),
                     Matches = new List<Match>()
                 };
@@ -255,7 +259,7 @@ namespace TournamentApp.Services
             try
             {
 
-                using var createCommand = new SqlCommand("sp_CreateTournament", connection, transaction)
+                using var createCommand = new SqlCommand("CreateTournament", connection, transaction)
                 {
                     CommandType = CommandType.StoredProcedure
                 };
@@ -264,6 +268,8 @@ namespace TournamentApp.Services
                 createCommand.Parameters.AddWithValue("@EndDate", (object?)tournament.EndDate ?? DBNull.Value);
                 createCommand.Parameters.AddWithValue("@Description", (object?)tournament.Description ?? DBNull.Value);
                 createCommand.Parameters.AddWithValue("@MatchesPerOpponent", tournament.MatchesPerOpponent);
+                createCommand.Parameters.AddWithValue("@Type", (int)tournament.Type);
+                createCommand.Parameters.AddWithValue("@Gender", (int)tournament.Gender);
 
                 using var reader = await createCommand.ExecuteReaderAsync();
                 await reader.ReadAsync();
@@ -277,7 +283,7 @@ namespace TournamentApp.Services
                         ? teamNames[pId]
                         : "Без команды";
 
-                    using var participantsCommand = new SqlCommand("sp_AddSingleTournamentParticipant", connection, transaction)
+                    using var participantsCommand = new SqlCommand("AddSingleTournamentParticipant", connection, transaction)
                     {
                         CommandType = CommandType.StoredProcedure
                     };
@@ -289,7 +295,7 @@ namespace TournamentApp.Services
                 }
 
 
-                using var matchesCommand = new SqlCommand("sp_CreateTournamentMatches", connection, transaction)
+                using var matchesCommand = new SqlCommand("CreateTournamentMatches", connection, transaction)
                 {
                     CommandType = CommandType.StoredProcedure
                 };
@@ -313,7 +319,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_UpdateTournament", connection)
+            using var command = new SqlCommand("UpdateTournament", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -333,7 +339,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_DeleteTournament", connection)
+            using var command = new SqlCommand("DeleteTournament", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -355,7 +361,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_GetTournamentMatches", connection)
+            using var command = new SqlCommand("GetTournamentMatches", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -402,7 +408,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_GetMatchById", connection)
+            using var command = new SqlCommand("GetMatchById", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -456,7 +462,7 @@ namespace TournamentApp.Services
             var match = await GetMatchByIdAsync(matchId);
             if (match == null) return false;
 
-            using var command = new SqlCommand("sp_UpdateMatchResult", connection)
+            using var command = new SqlCommand("UpdateMatchResult", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -566,7 +572,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_GetAllParticipants", connection)
+            using var command = new SqlCommand("GetAllParticipants", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -594,7 +600,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_CreateParticipant", connection)
+            using var command = new SqlCommand("CreateParticipant", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -615,7 +621,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_GetParticipantById", connection)
+            using var command = new SqlCommand("GetParticipantById", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -642,7 +648,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_UpdateParticipant", connection)
+            using var command = new SqlCommand("UpdateParticipant", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -661,7 +667,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_DeleteParticipant", connection)
+            using var command = new SqlCommand("DeleteParticipant", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -689,7 +695,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_GetTournamentStandings", connection)
+            using var command = new SqlCommand("GetTournamentStandings", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -723,7 +729,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_GetParticipantStatistics", connection)
+            using var command = new SqlCommand("GetParticipantStatistics", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -757,7 +763,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_GetHeadToHeadStatistics", connection)
+            using var command = new SqlCommand("GetHeadToHeadStatistics", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -790,7 +796,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_GeneratePlayoff", connection)
+            using var command = new SqlCommand("GeneratePlayoff", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -812,7 +818,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_GenerateFinal", connection)
+            using var command = new SqlCommand("GenerateFinal", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -852,7 +858,7 @@ namespace TournamentApp.Services
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_GenerateRandomGroupResults", connection)
+            using var command = new SqlCommand("GenerateRandomGroupResults", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };

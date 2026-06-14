@@ -49,7 +49,7 @@ namespace TournamentApp.Migrations
             ");
 
             migrationBuilder.Sql(@"
-                CREATE OR ALTER PROCEDURE sp_GetParticipantStatistics
+                CREATE OR ALTER PROCEDURE GetParticipantStatistics
                     @ParticipantId INT
                 AS
                 BEGIN

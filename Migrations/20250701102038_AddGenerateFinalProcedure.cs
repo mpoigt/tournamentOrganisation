@@ -10,7 +10,7 @@ namespace TournamentApp.Migrations
         {
             migrationBuilder.Sql(@"
                 -- Создать финал между победителями полуфиналов
-                CREATE OR ALTER PROCEDURE sp_GenerateFinal
+                CREATE OR ALTER PROCEDURE GenerateFinal
                     @TournamentId INT
                 AS
                 BEGIN
@@ -101,7 +101,7 @@ namespace TournamentApp.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"DROP PROCEDURE IF EXISTS sp_GenerateFinal");
+            migrationBuilder.Sql(@"DROP PROCEDURE IF EXISTS GenerateFinal");
         }
     }
 }

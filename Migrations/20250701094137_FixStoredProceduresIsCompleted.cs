@@ -10,7 +10,7 @@ namespace TournamentApp.Migrations
         {
 
             migrationBuilder.Sql(@"
-CREATE OR ALTER PROCEDURE sp_CreateTournamentMatches
+CREATE OR ALTER PROCEDURE CreateTournamentMatches
     @TournamentId INT,
     @MatchesPerOpponent INT
 AS
@@ -40,7 +40,7 @@ END");
 
 
             migrationBuilder.Sql(@"
-CREATE OR ALTER PROCEDURE sp_GeneratePlayoff
+CREATE OR ALTER PROCEDURE GeneratePlayoff
     @TournamentId INT
 AS
 BEGIN

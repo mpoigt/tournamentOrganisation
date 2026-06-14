@@ -52,7 +52,7 @@ namespace TournamentApp.Migrations
 
             // Обновляем процедуру для получения всех турниров с победителями  
             migrationBuilder.Sql(@"
-                CREATE OR ALTER PROCEDURE sp_GetAllTournaments
+                CREATE OR ALTER PROCEDURE GetAllTournaments
                 AS
                 BEGIN
                     SELECT 
@@ -72,7 +72,7 @@ namespace TournamentApp.Migrations
 
             // Обновляем процедуру для получения турнира по ID с победителем
             migrationBuilder.Sql(@"
-                CREATE OR ALTER PROCEDURE sp_GetTournamentById
+                CREATE OR ALTER PROCEDURE GetTournamentById
                     @TournamentId INT
                 AS
                 BEGIN
