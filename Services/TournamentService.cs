@@ -2,7 +2,9 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using TournamentApp.Data;
+using TournamentApp.Enums;
 using TournamentApp.Models;
+using MatchType = TournamentApp.Enums.MatchType;
 
 namespace TournamentApp.Services
 {
@@ -22,232 +24,22 @@ namespace TournamentApp.Services
 
         public async Task<List<Tournament>> GetAllTournamentsAsync()
         {
-            var tournaments = new List<Tournament>();
-            var tournamentDict = new Dictionary<int, Tournament>();
-
-            using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
-
-            using var command = new SqlCommand("GetAllTournaments", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-
-            using var reader = await command.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
-            {
-                var tournamentId = reader.GetInt32("Id");
-
-                if (!tournamentDict.ContainsKey(tournamentId))
-                {
-                    var tournament = new Tournament
-                    {
-                        Id = tournamentId,
-                        Name = reader.GetString("Name"),
-                        StartDate = reader.GetDateTime("StartDate"),
-                        EndDate = reader.IsDBNull("EndDate") ? null : reader.GetDateTime("EndDate"),
-                        Description = reader.IsDBNull("Description") ? null : reader.GetString("Description"),
-                        MatchesPerOpponent = reader.GetInt32("MatchesPerOpponent"),
-                        IsCompleted = reader.GetBoolean("IsCompleted"),
-                        PlayoffGenerated = reader.GetBoolean("PlayoffGenerated"),
-                        WinnerId = reader.IsDBNull("WinnerId") ? null : reader.GetInt32("WinnerId"),
-                        CreatedAt = reader.GetDateTime("CreatedAt"),
-                        Type = (Tournament.TournamentType)reader.GetInt32("Type"),
-                        Gender = (Tournament.TeamGender)reader.GetInt32("Gender"),
-                        TournamentParticipants = new List<TournamentParticipant>()
-                    };
-
-                    tournamentDict[tournamentId] = tournament;
-                    tournaments.Add(tournament);
-                }
-
-
-                if (!reader.IsDBNull("ParticipantId"))
-                {
-                    var participant = new Participant
-                    {
-                        Id = reader.GetInt32("ParticipantId"),
-                        Name = reader.GetString("ParticipantName"),
-                        Email = reader.IsDBNull("ParticipantEmail") ? null : reader.GetString("ParticipantEmail"),
-                        Phone = reader.IsDBNull("ParticipantPhone") ? null : reader.GetString("ParticipantPhone"),
-                        CreatedAt = reader.GetDateTime("ParticipantCreatedAt")
-                    };
-
-                    var tournamentParticipant = new TournamentParticipant
-                    {
-                        TournamentId = tournamentId,
-                        ParticipantId = participant.Id,
-                        Participant = participant,
-                        JoinedAt = reader.GetDateTime("JoinedAt")
-                    };
-
-                    tournamentDict[tournamentId].TournamentParticipants.Add(tournamentParticipant);
-                }
-
-                var currentTournament = tournamentDict[tournamentId];
-                if (!reader.IsDBNull("WinnerId") && currentTournament.Winner == null)
-                {
-                    var winnerId = reader.GetInt32("WinnerId");
-                    var winnerParticipant = currentTournament.TournamentParticipants.FirstOrDefault(tp => tp.ParticipantId == winnerId);
-                    if (winnerParticipant != null)
-                    {
-                        currentTournament.Winner = winnerParticipant.Participant;
-                    }
-                    else
-                    {
-                        try 
-                        {
-                            if (!reader.IsDBNull("WinnerName"))
-                            {
-                                currentTournament.Winner = new Participant
-                                {
-                                    Id = winnerId,
-                                    Name = reader.GetString("WinnerName")
-                                };
-                            }
-                        }
-                        catch (InvalidOperationException)
-                        {
-                        }
-                    }
-                }
-            }
-
-            return tournaments;
+            return await _context.Tournaments
+                .Include(x => x.TournamentParticipants)
+                .ThenInclude(x => x.Participant)
+                .Include(x => x.Winner)
+                .Include(x => x.Matches)
+                .ToListAsync();
         }
 
         public async Task<Tournament?> GetTournamentByIdAsync(int id)
         {
-            using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
-
-            using var command = new SqlCommand("GetTournamentById", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.AddWithValue("@TournamentId", id);
-
-            using var reader = await command.ExecuteReaderAsync();
-
-            Tournament? tournament = null;
-
-
-            if (await reader.ReadAsync())
-            {
-                tournament = new Tournament
-                {
-                    Id = reader.GetInt32("Id"),
-                    Name = reader.GetString("Name"),
-                    StartDate = reader.GetDateTime("StartDate"),
-                    EndDate = reader.IsDBNull("EndDate") ? null : reader.GetDateTime("EndDate"),
-                    Description = reader.IsDBNull("Description") ? null : reader.GetString("Description"),
-                    MatchesPerOpponent = reader.GetInt32("MatchesPerOpponent"),
-                    IsCompleted = reader.GetBoolean("IsCompleted"),
-                    PlayoffGenerated = reader.GetBoolean("PlayoffGenerated"),
-                    WinnerId = reader.IsDBNull("WinnerId") ? null : reader.GetInt32("WinnerId"),
-                    CreatedAt = reader.GetDateTime("CreatedAt"),
-                    Type = (Tournament.TournamentType)reader.GetInt32("Type"),
-                    Gender = (Tournament.TeamGender)reader.GetInt32("Gender"),
-                    TournamentParticipants = new List<TournamentParticipant>(),
-                    Matches = new List<Match>()
-                };
-
-                if (!reader.IsDBNull("WinnerId"))
-                {
-                    try
-                    {
-                        if (!reader.IsDBNull("WinnerName"))
-                        {
-                            tournament.Winner = new Participant
-                            {
-                                Id = reader.GetInt32("WinnerId"),
-                                Name = reader.GetString("WinnerName")
-                            };
-                        }
-                    }
-                    catch (InvalidOperationException)
-                    {
-                    }
-                }
-            }
-
-            if (tournament == null) return null;
-
-
-            if (await reader.NextResultAsync())
-            {
-                while (await reader.ReadAsync())
-                {
-                    var participant = new Participant
-                    {
-                        Id = reader.GetInt32("Id"),
-                        Name = reader.GetString("Name"),
-                        Email = reader.IsDBNull("Email") ? null : reader.GetString("Email"),
-                        Phone = reader.IsDBNull("Phone") ? null : reader.GetString("Phone"),
-                        CreatedAt = reader.GetDateTime("CreatedAt")
-                    };
-
-                    var tournamentParticipant = new TournamentParticipant
-                    {
-                        TournamentId = tournament.Id,
-                        ParticipantId = participant.Id,
-                        Participant = participant,
-                        Tournament = tournament,
-                        JoinedAt = reader.GetDateTime("JoinedAt"),
-                        TeamName = reader.IsDBNull("TeamName") ? "Без команды" : reader.GetString("TeamName")
-                    };
-
-                    tournament.TournamentParticipants.Add(tournamentParticipant);
-                }
-            }
-
-            if (tournament.WinnerId.HasValue && tournament.Winner == null)
-            {
-                var winner = tournament.TournamentParticipants
-                    .FirstOrDefault(tp => tp.ParticipantId == tournament.WinnerId.Value);
-                if (winner != null)
-                {
-                    tournament.Winner = winner.Participant;
-                }
-            }
-
-            if (await reader.NextResultAsync())
-            {
-                while (await reader.ReadAsync())
-                {
-                    var homeParticipant = new Participant 
-                    { 
-                        Id = reader.GetInt32("HomeParticipantId"), 
-                        Name = reader.GetString("HomeParticipantName") 
-                    };
-                    var awayParticipant = new Participant 
-                    { 
-                        Id = reader.GetInt32("AwayParticipantId"), 
-                        Name = reader.GetString("AwayParticipantName") 
-                    };
-
-                    var match = new Match
-                    {
-                        Id = reader.GetInt32("Id"),
-                        TournamentId = reader.GetInt32("TournamentId"),
-                        HomeParticipantId = reader.GetInt32("HomeParticipantId"),
-                        AwayParticipantId = reader.GetInt32("AwayParticipantId"),
-                        HomeScore = reader.IsDBNull("HomeScore") ? null : reader.GetInt32("HomeScore"),
-                        AwayScore = reader.IsDBNull("AwayScore") ? null : reader.GetInt32("AwayScore"),
-                        PlayedAt = reader.IsDBNull("PlayedAt") ? null : reader.GetDateTime("PlayedAt"),
-                        IsCompleted = reader.GetBoolean("IsCompleted"),
-                        Type = (TournamentApp.Models.MatchType)reader.GetInt32("Type"),
-                        CreatedAt = reader.GetDateTime("CreatedAt"),
-                        Tournament = tournament,
-                        HomeParticipant = homeParticipant,
-                        AwayParticipant = awayParticipant
-                    };
-
-                    tournament.Matches.Add(match);
-                }
-            }
-
-            return tournament;
+            return await _context.Tournaments
+                .Include(x => x.TournamentParticipants)
+                .ThenInclude(x => x.Participant)
+                .Include(x => x.Winner)
+                .Include(x => x.Matches)
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<Tournament> CreateTournamentAsync(Tournament tournament, List<int> participantIds, Dictionary<int, string> teamNames)
@@ -268,8 +60,8 @@ namespace TournamentApp.Services
                 createCommand.Parameters.AddWithValue("@EndDate", (object?)tournament.EndDate ?? DBNull.Value);
                 createCommand.Parameters.AddWithValue("@Description", (object?)tournament.Description ?? DBNull.Value);
                 createCommand.Parameters.AddWithValue("@MatchesPerOpponent", tournament.MatchesPerOpponent);
-                createCommand.Parameters.AddWithValue("@Type", (int)tournament.Type);
-                createCommand.Parameters.AddWithValue("@Gender", (int)tournament.Gender);
+                createCommand.Parameters.AddWithValue("@Type", tournament.Type.Code);
+                createCommand.Parameters.AddWithValue("@Gender", tournament.Gender.Code);
 
                 using var reader = await createCommand.ExecuteReaderAsync();
                 await reader.ReadAsync();
@@ -391,7 +183,7 @@ namespace TournamentApp.Services
                     AwayScore = reader.IsDBNull("AwayScore") ? null : reader.GetInt32("AwayScore"),
                     PlayedAt = reader.IsDBNull("PlayedAt") ? null : reader.GetDateTime("PlayedAt"),
                     IsCompleted = reader.GetBoolean("IsCompleted"),
-                    Type = (TournamentApp.Models.MatchType)reader.GetInt32("Type"),
+                    Type = (MatchType)reader.GetInt32("Type"),
                     CreatedAt = reader.GetDateTime("CreatedAt"),
                     HomeParticipant = homeParticipant,
                     AwayParticipant = awayParticipant
@@ -443,7 +235,7 @@ namespace TournamentApp.Services
                     AwayScore = reader.IsDBNull("AwayScore") ? null : reader.GetInt32("AwayScore"),
                     PlayedAt = reader.IsDBNull("PlayedAt") ? null : reader.GetDateTime("PlayedAt"),
                     IsCompleted = reader.GetBoolean("IsCompleted"),
-                    Type = (TournamentApp.Models.MatchType)reader.GetInt32("Type"),
+                    Type = (MatchType)reader.GetInt32("Type"),
                     CreatedAt = reader.GetDateTime("CreatedAt"),
                     HomeParticipant = homeParticipant,
                     AwayParticipant = awayParticipant,
@@ -477,7 +269,7 @@ namespace TournamentApp.Services
 
             if (success && isCompleted)
             {
-                if (match.Type == TournamentApp.Models.MatchType.Playoff)
+                if (match.Type == MatchType.Playoff)
                 {
                     try
                     {
@@ -487,7 +279,7 @@ namespace TournamentApp.Services
                     {
                     }
                 }
-                else if (match.Type == TournamentApp.Models.MatchType.Final)
+                else if (match.Type == MatchType.Final)
                 {
                     await CompleteTournamentAsync(match.TournamentId);
                 }

@@ -19,6 +19,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<TournamentDbContext>();
+    await context.Database.MigrateAsync();
+}
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 

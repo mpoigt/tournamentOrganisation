@@ -3,9 +3,9 @@
 @{
     ViewData["Title"] = $"Матчи турнира {ViewBag.Tournament.Name}";
     var tournament = ViewBag.Tournament as TournamentApp.Models.Tournament;
-    var groupMatches = Model.Where(m => m.Type == TournamentApp.Models.MatchType.Group).ToList();
-    var playoffMatches = Model.Where(m => m.Type == TournamentApp.Models.MatchType.Playoff).ToList();
-    var finalMatches = Model.Where(m => m.Type == TournamentApp.Models.MatchType.Final).ToList();
+    var groupMatches = Model.Where(m => m.Type == TournamentApp.Enums.MatchType.Group).ToList();
+    var playoffMatches = Model.Where(m => m.Type == TournamentApp.Enums.MatchType.Playoff).ToList();
+    var finalMatches = Model.Where(m => m.Type == TournamentApp.Enums.MatchType.Final).ToList();
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -116,15 +116,15 @@ else
                                 @if (match.IsCompleted)
                                 {
                                     <div class="mt-3">
-                                        @if (match.Result == TournamentApp.Models.MatchResult.HomeWin)
+                                        @if (match.Result == TournamentApp.Enums.MatchResult.HomeWin)
                                         {
                                             <span class="badge bg-primary">Победитель: @match.HomeParticipant.Name</span>
                                         }
-                                        else if (match.Result == TournamentApp.Models.MatchResult.AwayWin)
+                                        else if (match.Result == TournamentApp.Enums.MatchResult.AwayWin)
                                         {
                                             <span class="badge bg-primary">Победитель: @match.AwayParticipant.Name</span>
                                         }
-                                        else if (match.Result == TournamentApp.Models.MatchResult.Draw)
+                                        else if (match.Result == TournamentApp.Enums.MatchResult.Draw)
                                         {
                                             <span class="badge bg-secondary">Ничья</span>
                                         }
@@ -203,15 +203,15 @@ else
                                 @if (match.IsCompleted)
                                 {
                                     <div class="mt-3">
-                                        @if (match.Result == TournamentApp.Models.MatchResult.HomeWin)
+                                        @if (match.Result == TournamentApp.Enums.MatchResult.HomeWin)
                                         {
                                             <span class="badge bg-success fs-6">🏆 Победитель: @match.HomeParticipant.Name</span>
                                         }
-                                        else if (match.Result == TournamentApp.Models.MatchResult.AwayWin)
+                                        else if (match.Result == TournamentApp.Enums.MatchResult.AwayWin)
                                         {
                                             <span class="badge bg-success fs-6">🏆 Победитель: @match.AwayParticipant.Name</span>
                                         }
-                                        else if (match.Result == TournamentApp.Models.MatchResult.Draw)
+                                        else if (match.Result == TournamentApp.Enums.MatchResult.Draw)
                                         {
                                             <span class="badge bg-secondary fs-6">Ничья (требуется переигровка)</span>
                                         }
@@ -290,15 +290,15 @@ else
                                 @if (match.IsCompleted)
                                 {
                                     <div class="mt-3">
-                                        @if (match.Result == TournamentApp.Models.MatchResult.HomeWin)
+                                        @if (match.Result == TournamentApp.Enums.MatchResult.HomeWin)
                                         {
                                             <span class="badge bg-warning fs-5 text-dark">🥇 ЧЕМПИОН: @match.HomeParticipant.Name</span>
                                         }
-                                        else if (match.Result == TournamentApp.Models.MatchResult.AwayWin)
+                                        else if (match.Result == TournamentApp.Enums.MatchResult.AwayWin)
                                         {
                                             <span class="badge bg-warning fs-5 text-dark">🥇 ЧЕМПИОН: @match.AwayParticipant.Name</span>
                                         }
-                                        else if (match.Result == TournamentApp.Models.MatchResult.Draw)
+                                        else if (match.Result == TournamentApp.Enums.MatchResult.Draw)
                                         {
                                             <span class="badge bg-secondary fs-5">⚖️ Ничья в финале</span>
                                         }

@@ -1,4 +1,5 @@
-@model TournamentApp.Models.Tournament
+@using TournamentApp.Enums
+@model TournamentApp.DTOs.CreateTournamentDTO
 
 @{
     ViewData["Title"] = "Создать турнир";
@@ -16,7 +17,7 @@
                     
                     <div class="mb-3">
                         <label asp-for="Name" class="form-label">Название турнира *</label>
-                        <input asp-for="Name" class="form-control" placeholder="Введите название турнира" />
+                        <input asp-for="Name" class="form-control" placeholder="Введите название турнира (оставьте пустым для автогенерации)" />
                         <span asp-validation-for="Name" class="text-danger"></span>
                     </div>
                     
@@ -34,14 +35,14 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label asp-for="Type" class="form-label">Тип турнира *</label>
-                                <select asp-for="Type" class="form-select" asp-items="Html.GetEnumSelectList<TournamentApp.Models.Tournament.TournamentType>()"></select>
+                                <select asp-for="Type" class="form-select" asp-items="@(new SelectList(TournamentType.All, "Name", "Name"))"></select>
                                 <span asp-validation-for="Type" class="text-danger"></span>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label asp-for="Gender" class="form-label">Категория (Пол) *</label>
-                                <select asp-for="Gender" class="form-select" asp-items="Html.GetEnumSelectList<TournamentApp.Models.Tournament.TeamGender>()"></select>
+                                <select asp-for="Gender" class="form-select" asp-items="@(new SelectList(TeamGender.All, "Name", "Name"))"></select>
                                 <span asp-validation-for="Gender" class="text-danger"></span>
                             </div>
                         </div>
@@ -69,25 +70,32 @@
                     <div class="mb-3">
                         <label class="form-label">Участники и их команды * (от 3 до 5)</label>
                         <div class="row">
-                            @foreach (var participant in ViewBag.Participants)
+                            @if (ViewBag.Participants != null)
                             {
-                                <div class="col-md-12 mb-2">
-                                    <div class="input-group">
-                                        <div class="input-group-text">
-                                            <input class="form-check-input mt-0" type="checkbox" 
-                                                name="participantIds" value="@participant.Id" 
-                                                id="participant_@participant.Id" 
-                                                onchange="document.getElementById('team_@participant.Id').disabled = !this.checked;" />
+                                @foreach (var participant in ViewBag.Participants)
+                                {
+                                    <div class="col-md-12 mb-2">
+                                        <div class="input-group">
+                                            <div class="input-group-text">
+                                                <input class="form-check-input mt-0" type="checkbox"
+                                                       name="ParticipantIds" value="@participant.Id"
+                                                       id="participant_@participant.Id"
+                                                       onchange="document.getElementById('team_@participant.Id').disabled = !this.checked;" />
+                                            </div>
+                                            <label class="input-group-text" for="participant_@participant.Id" style="width: 200px;">
+                                                @participant.Name
+                                            </label>
+                                            <input type="text" class="form-control"
+                                                   name="TeamNames[@participant.Id]"
+                                                   id="team_@participant.Id"
+                                                   placeholder="Введите название команды..." disabled required />
                                         </div>
-                                        <label class="input-group-text" for="participant_@participant.Id" style="width: 200px;">
-                                            @participant.Name
-                                        </label>
-                                        <input type="text" class="form-control" 
-                                            name="teamNames[@participant.Id]" 
-                                            id="team_@participant.Id" 
-                                            placeholder="Введите название команды..." disabled required />
                                     </div>
-                                </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="text-danger">Список участников не загрузился. Убедитесь, что в GET-методе Create передается ViewBag.Participants.</div>
                             }
                         </div>
                         <div class="form-text">Выберите от 3 до 5 участников и пропишите команду каждому</div>
@@ -108,11 +116,13 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     
     <script>
         $('form').on('submit', function(e) {
-            var checkedParticipants = $('input[name="participantIds"]:checked').length;
+            var checkedParticipants = $('input[name="ParticipantIds"]:checked').length;
             if (checkedParticipants < 3) {
                 alert('Выберите минимум 3 участника');
                 e.preventDefault();
@@ -125,4 +135,4 @@
             }
         });
     </script>
-} 
+}
