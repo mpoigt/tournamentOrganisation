@@ -5,27 +5,29 @@ namespace TournamentApp.Controllers
 {
     public class StatisticsController : Controller
     {
-        private readonly ITournamentService _tournamentService;
-        
-        public StatisticsController(ITournamentService tournamentService)
+        private readonly IStatisticService _statisticService;
+        private readonly IParticipantService _participantService;
+
+        public StatisticsController(IStatisticService statisticService, IParticipantService participantService)
         {
-            _tournamentService = tournamentService;
+            _statisticService = statisticService;
+            _participantService = participantService;
         }
-        
+
         public async Task<IActionResult> Index()
         {
-            var participants = await _tournamentService.GetAllParticipantsAsync();
+            var participants = await _participantService.GetAllParticipantsAsync();
             var participantStats = new List<Models.ParticipantStatistics>();
             
             foreach (var participant in participants)
             {
-                var stats = await _tournamentService.GetParticipantStatisticsAsync(participant.Id);
+                var stats = await _statisticService.GetParticipantStatisticsAsync(participant.Id);
                 participantStats.Add(stats);
             }
             
             ViewBag.ParticipantStatistics = participantStats;
             
-            var headToHeadStats = await _tournamentService.GetHeadToHeadStatisticsAsync();
+            var headToHeadStats = await _statisticService.GetHeadToHeadStatisticsAsync();
             ViewBag.HeadToHeadStatistics = headToHeadStats;
             
             return View();
@@ -33,8 +35,8 @@ namespace TournamentApp.Controllers
         
         public async Task<IActionResult> Participant(int id)
         {
-            var stats = await _tournamentService.GetParticipantStatisticsAsync(id);
-            var participant = await _tournamentService.GetParticipantByIdAsync(id);
+            var stats = await _statisticService.GetParticipantStatisticsAsync(id);
+            var participant = await _participantService.GetParticipantByIdAsync(id);
             
             if (participant == null)
             {
@@ -47,7 +49,7 @@ namespace TournamentApp.Controllers
         
         public async Task<IActionResult> HeadToHead()
         {
-            var headToHeadStats = await _tournamentService.GetHeadToHeadStatisticsAsync();
+            var headToHeadStats = await _statisticService.GetHeadToHeadStatisticsAsync();
             return View(headToHeadStats);
         }
     }

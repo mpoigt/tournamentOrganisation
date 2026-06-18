@@ -9,10 +9,14 @@ namespace TournamentApp.Controllers
     public class TournamentsController : Controller
     {
         private readonly ITournamentService _tournamentService;
+        private readonly IParticipantService _parcipantService;
+        private readonly IMatchService _matchService;
         
-        public TournamentsController(ITournamentService tournamentService)
+        public TournamentsController(ITournamentService tournamentService, IParticipantService parcipantService, IMatchService matchService)
         {
             _tournamentService = tournamentService;
+            _parcipantService = parcipantService;
+            _matchService = matchService;
         }
         
         public async Task<IActionResult> Index()
@@ -23,12 +27,13 @@ namespace TournamentApp.Controllers
         
         public async Task<IActionResult> Create()
         {
-            var participants = await _tournamentService.GetAllParticipantsAsync();
+            var participants = await _parcipantService.GetAllParticipantsAsync();
             ViewBag.Participants = participants;
             return View(new CreateTournamentDTO());
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateTournamentDTO dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Name))
@@ -42,7 +47,7 @@ namespace TournamentApp.Controllers
                 if (dto.ParticipantIds == null || dto.ParticipantIds.Count < 2 || dto.ParticipantIds.Count > 6)
                 {
                     ModelState.AddModelError("", "Выберите от 2 до 6 участников");
-                    ViewBag.Participants = await _tournamentService.GetAllParticipantsAsync();
+                    ViewBag.Participants = await _parcipantService.GetAllParticipantsAsync();
                     return View(dto);
                 }
 
@@ -68,7 +73,7 @@ namespace TournamentApp.Controllers
                 }
             }
 
-            ViewBag.Participants = await _tournamentService.GetAllParticipantsAsync();
+            ViewBag.Participants = await _parcipantService.GetAllParticipantsAsync();
             return View(dto);
         }
 
@@ -99,7 +104,7 @@ namespace TournamentApp.Controllers
         
         public async Task<IActionResult> Matches(int id)
         {
-            var matches = await _tournamentService.GetTournamentMatchesAsync(id);
+            var matches = await _matchService.GetTournamentMatchesAsync(id);
             var tournament = await _tournamentService.GetTournamentByIdAsync(id);
             
             if (tournament == null)
@@ -195,6 +200,28 @@ namespace TournamentApp.Controllers
             }
 
             return View(dto);
+        }
+
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var tournament = await _tournamentService.GetTournamentByIdAsync(id);
+                if (tournament == null)
+                {
+
+                    TempData["Error"] = $"Турнир с ID {id} не найден в базе данных.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                return View(tournament);
+            }
+            catch (Exception ex)
+            {
+
+                TempData["Error"] = $"Ошибка при получении турнира: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         [HttpPost, ActionName("Delete")]
