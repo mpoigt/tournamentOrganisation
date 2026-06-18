@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using TournamentApp.Constants;
 using TournamentApp.DTOs;
 using TournamentApp.Enums;
 using TournamentApp.Models;
@@ -44,9 +45,14 @@ namespace TournamentApp.Controllers
 
             if (ModelState.IsValid)
             {
-                if (dto.ParticipantIds == null || dto.ParticipantIds.Count < 2 || dto.ParticipantIds.Count > 6)
+                if (dto.ParticipantIds == null || 
+                    dto.ParticipantIds.Count < ValidationConstants.MinParticipants || 
+                    dto.ParticipantIds.Count > ValidationConstants.MaxParticipants)
                 {
-                    ModelState.AddModelError("", "Выберите от 2 до 6 участников");
+                    ModelState.AddModelError(
+                        string.Empty,
+                        $"Выберите от {ValidationConstants.MinParticipants} до {ValidationConstants.MaxParticipants} участников"
+                    );
                     ViewBag.Participants = await _parcipantService.GetAllParticipantsAsync();
                     return View(dto);
                 }

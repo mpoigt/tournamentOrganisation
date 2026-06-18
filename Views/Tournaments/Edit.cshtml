@@ -4,6 +4,8 @@
     ViewData["Title"] = "Редактировать турнир";
 }
 
+<link rel="stylesheet" href="~/css/tournament-create.css" />
+
 <div class="row">
     <div class="col-md-8 offset-md-2">
         <div class="card">
@@ -62,14 +64,17 @@
                             {
                                 foreach (var p in Model.Participants)
                                 {
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
+                                    <li class="list-group-item d-flex align-items-center edit-participant-item">
+                                        <div class="edit-participant-name">
                                             <i class="bi bi-person-fill text-secondary me-2"></i>
                                             @p.Key
                                         </div>
-                                        <span class="badge bg-primary rounded-pill" style="font-size: 0.9rem;">
-                                            @p.Value
-                                        </span>
+                
+                                        <div class="edit-participant-team-container">
+                                            <span class="badge bg-primary rounded-pill edit-participant-badge" title="@p.Value">
+                                                @p.Value
+                                            </span>
+                                        </div>
                                     </li>
                                 }
                             }

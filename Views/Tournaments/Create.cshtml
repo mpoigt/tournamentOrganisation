@@ -1,9 +1,12 @@
 @using TournamentApp.Enums
+@using TournamentApp.Constants
 @model TournamentApp.DTOs.CreateTournamentDTO
 
 @{
     ViewData["Title"] = "Создать турнир";
 }
+
+<link rel="stylesheet" href="~/css/tournament-create.css" />
 
 <div class="row">
     <div class="col-md-8 offset-md-2">
@@ -68,24 +71,26 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">Участники и их команды * (от 3 до 5)</label>
+                        <label class="form-label">Участники и их команды * (от @ValidationConstants.MinParticipants до @ValidationConstants.MaxParticipants)</label>
                         <div class="row">
                             @if (ViewBag.Participants != null)
                             {
                                 @foreach (var participant in ViewBag.Participants)
                                 {
                                     <div class="col-md-12 mb-2">
-                                        <div class="input-group">
+                                        <div class="input-group participant-input-group">
                                             <div class="input-group-text">
                                                 <input class="form-check-input mt-0" type="checkbox"
                                                        name="ParticipantIds" value="@participant.Id"
                                                        id="participant_@participant.Id"
                                                        onchange="document.getElementById('team_@participant.Id').disabled = !this.checked;" />
                                             </div>
-                                            <label class="input-group-text" for="participant_@participant.Id" style="width: 200px;">
+        
+                                            <label class="input-group-text participant-name-label" for="participant_@participant.Id">
                                                 @participant.Name
                                             </label>
-                                            <input type="text" class="form-control"
+        
+                                            <input type="text" class="form-control participant-team-input"
                                                    name="TeamNames[@participant.Id]"
                                                    id="team_@participant.Id"
                                                    placeholder="Введите название команды..." disabled required />
@@ -98,7 +103,7 @@
                                 <div class="text-danger">Список участников не загрузился. Убедитесь, что в GET-методе Create передается ViewBag.Participants.</div>
                             }
                         </div>
-                        <div class="form-text">Выберите от 3 до 5 участников и пропишите команду каждому</div>
+                        <div class="form-text">Выберите от @ValidationConstants.MinParticipants до @ValidationConstants.MaxParticipants участников и пропишите команду каждому</div>
                     </div>
                     
                     <div class="d-flex justify-content-between">
@@ -123,13 +128,13 @@
     <script>
         $('form').on('submit', function(e) {
             var checkedParticipants = $('input[name="ParticipantIds"]:checked').length;
-            if (checkedParticipants < 3) {
-                alert('Выберите минимум 3 участника');
+            if (checkedParticipants < @ValidationConstants.MinParticipants) {
+                alert('Выберите минимум @ValidationConstants.MinParticipants участника');
                 e.preventDefault();
                 return false;
             }
-            if (checkedParticipants > 5) {
-                alert('Выберите максимум 5 участников');
+            if (checkedParticipants > @ValidationConstants.MaxParticipants) {
+                alert('Выберите максимум @ValidationConstants.MaxParticipants участников');
                 e.preventDefault();
                 return false;
             }

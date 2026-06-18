@@ -74,3 +74,48 @@ body {
   justify-content: center;
   padding: 0.25rem;
 }
+
+.participant-input-group {
+    flex-wrap: nowrap;
+}
+
+.participant-name-label {
+    width: 50%;
+    justify-content: flex-start;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.participant-team-input {
+    width: 50%;
+}
+
+.edit-participant-item {
+    flex-wrap: nowrap;
+}
+
+.edit-participant-name {
+    flex: 0 0 50%;
+    max-width: 50%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 15px;
+}
+
+.edit-participant-team-container {
+    flex: 0 0 50%; 
+    max-width: 50%;
+    text-align: right;
+}
+
+.edit-participant-badge {
+    font-size: 0.9rem;
+    max-width: 100%; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block; 
+    vertical-align: middle;
+}
