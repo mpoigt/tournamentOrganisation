@@ -1,4 +1,4 @@
-@model TournamentApp.Models.Tournament
+@model TournamentApp.DTOs.EditTournamentDTO
 
 @{
     ViewData["Title"] = "Редактировать турнир";
@@ -13,6 +13,7 @@
             <div class="card-body">
                 <form asp-action="Edit" method="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    
                     <input type="hidden" asp-for="Id" />
                     
                     <div class="mb-3">
@@ -30,18 +31,19 @@
                             </div>
                         </div>
                     </div>
+                    
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Тип турнира</label>
-                                <select class="form-select" asp-for="Type" asp-items="Html.GetEnumSelectList<TournamentApp.Models.Tournament.TournamentType>()" disabled></select>
+                                <input class="form-control" value="@Model.TypeDisplay" disabled />
                                 <div class="form-text text-muted">Тип турнира изменить нельзя</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Категория (Пол)</label>
-                                <select class="form-select" asp-for="Gender" asp-items="Html.GetEnumSelectList<TournamentApp.Models.Tournament.TeamGender>()" disabled></select>
+                                <input class="form-control" value="@Model.GenderDisplay" disabled />
                                 <div class="form-text text-muted">Категорию изменить нельзя</div>
                             </div>
                         </div>
@@ -56,29 +58,29 @@
                     <div class="mb-4">
                         <label class="form-label fw-bold">Участники и их команды</label>
                         <ul class="list-group">
-                        @if (Model.TournamentParticipants != null && Model.TournamentParticipants.Any())
-                        {
-                            foreach (var tp in Model.TournamentParticipants)
+                            @if (Model.Participants != null && Model.Participants.Any())
                             {
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="bi bi-person-fill text-secondary me-2"></i>
-                                            @tp.Participant?.Name
-                                    </div>
-                                    <span class="badge bg-primary rounded-pill" style="font-size: 0.9rem;">
-                                        @tp.TeamName
-                                    </span>
-                                </li>
+                                foreach (var p in Model.Participants)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="bi bi-person-fill text-secondary me-2"></i>
+                                            @p.Key
+                                        </div>
+                                        <span class="badge bg-primary rounded-pill" style="font-size: 0.9rem;">
+                                            @p.Value
+                                        </span>
+                                    </li>
+                                }
                             }
-                        }
-                        else
-                        {
-                            <li class="list-group-item text-muted">Участники не найдены</li>
-                        }
+                            else
+                            {
+                                <li class="list-group-item text-muted">Участники не найдены</li>
+                            }
                         </ul>
                         
                         <div class="form-text text-muted mt-2">
-                            <i class="bi bi-info-circle"></i> 
+                            <i class="bi bi-info-circle"></i>
                             Участников турнира нельзя изменить после создания. Для изменения состава создайте новый турнир.
                         </div>
                     </div>
@@ -98,5 +100,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using TournamentApp.DTOs;
+using TournamentApp.Enums;
 using TournamentApp.Models;
 using TournamentApp.Services;
 
@@ -23,31 +25,41 @@ namespace TournamentApp.Controllers
         {
             var participants = await _tournamentService.GetAllParticipantsAsync();
             ViewBag.Participants = participants;
-            return View(new Tournament());
+            return View(new CreateTournamentDTO());
         }
-        
+
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Tournament tournament, List<int> participantIds, Dictionary<int, string> teamNames)
+        public async Task<IActionResult> Create(CreateTournamentDTO dto)
         {
-            if (string.IsNullOrWhiteSpace(tournament.Name))
+            if (string.IsNullOrWhiteSpace(dto.Name))
             {
-                tournament.Name = tournament.StartDate.ToString("dd.MM.yyyy");
+                dto.Name = dto.StartDate.ToString("dd.MM.yyyy");
+                ModelState.Remove("Name");
             }
 
             if (ModelState.IsValid)
             {
-                if (participantIds == null || participantIds.Count < 2 || participantIds.Count > 6)
+                if (dto.ParticipantIds == null || dto.ParticipantIds.Count < 2 || dto.ParticipantIds.Count > 6)
                 {
                     ModelState.AddModelError("", "Выберите от 2 до 6 участников");
-                    var participants = await _tournamentService.GetAllParticipantsAsync();
-                    ViewBag.Participants = participants;
-                    return View(tournament);
+                    ViewBag.Participants = await _tournamentService.GetAllParticipantsAsync();
+                    return View(dto);
                 }
 
                 try
                 {
-                    await _tournamentService.CreateTournamentAsync(tournament, participantIds, teamNames);
+                    var tournament = new Tournament
+                    {
+                        Name = dto.Name,
+                        StartDate = dto.StartDate,
+                        Description = dto.Description,
+                        MatchesPerOpponent = dto.MatchesPerOpponent,
+                        Type = TournamentType.FromName(dto.Type),
+                        Gender = TeamGender.FromName(dto.Gender)
+                    };
+
+                    await _tournamentService.CreateTournamentAsync(tournament, dto.ParticipantIds, dto.TeamNames);
+
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
@@ -56,9 +68,8 @@ namespace TournamentApp.Controllers
                 }
             }
 
-            var allParticipants = await _tournamentService.GetAllParticipantsAsync();
-            ViewBag.Participants = allParticipants;
-            return View(tournament);
+            ViewBag.Participants = await _tournamentService.GetAllParticipantsAsync();
+            return View(dto);
         }
 
         public async Task<IActionResult> Details(int id)
@@ -99,7 +110,8 @@ namespace TournamentApp.Controllers
             ViewBag.Tournament = tournament;
             return View(matches);
         }
-        
+
+        [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var tournament = await _tournamentService.GetTournamentByIdAsync(id);
@@ -107,24 +119,53 @@ namespace TournamentApp.Controllers
             {
                 return NotFound();
             }
-            
-            var participants = await _tournamentService.GetAllParticipantsAsync();
-            ViewBag.Participants = participants;
-            return View(tournament);
+
+            var dto = new EditTournamentDTO
+            {
+                Id = tournament.Id,
+                Name = tournament.Name,
+                StartDate = tournament.StartDate,
+                Description = tournament.Description,
+                TypeDisplay = tournament.Type?.Name,
+                GenderDisplay = tournament.Gender?.Name
+            };
+
+            if (tournament.TournamentParticipants != null)
+            {
+                foreach (var tp in tournament.TournamentParticipants)
+                {
+                    if (tp.Participant != null)
+                    {
+                        dto.Participants[tp.Participant.Name] = tp.TeamName;
+                    }
+                }
+            }
+
+            return View(dto);
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Tournament tournament)
+        public async Task<IActionResult> Edit(int id, EditTournamentDTO dto)
         {
-            if (id != tournament.Id)
+            if (id != dto.Id)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
-                var success = await _tournamentService.UpdateTournamentAsync(id, tournament);
+                var existingTournament = await _tournamentService.GetTournamentByIdAsync(id);
+                if (existingTournament == null)
+                {
+                    return NotFound();
+                }
+
+                existingTournament.Name = dto.Name;
+                existingTournament.StartDate = dto.StartDate;
+                existingTournament.Description = dto.Description;
+
+                var success = await _tournamentService.UpdateTournamentAsync(id, existingTournament);
                 if (success)
                 {
                     return RedirectToAction(nameof(Index));
@@ -135,33 +176,27 @@ namespace TournamentApp.Controllers
                 }
             }
 
-            var participants = await _tournamentService.GetAllParticipantsAsync();
-            ViewBag.Participants = participants;
-            return View(tournament);
-        }
-
-        public async Task<IActionResult> Delete(int id)
-        {
-            try
+            var t = await _tournamentService.GetTournamentByIdAsync(id);
+            if (t != null)
             {
-                var tournament = await _tournamentService.GetTournamentByIdAsync(id);
-                if (tournament == null)
+                dto.TypeDisplay = t.Type?.Name;
+                dto.GenderDisplay = t.Gender?.Name;
+
+                if (t.TournamentParticipants != null)
                 {
-
-                    TempData["Error"] = $"Турнир с ID {id} не найден в базе данных.";
-                    return RedirectToAction(nameof(Index));
+                    foreach (var tp in t.TournamentParticipants)
+                    {
+                        if (tp.Participant != null)
+                        {
+                            dto.Participants[tp.Participant.Name] = tp.TeamName;
+                        }
+                    }
                 }
-
-                return View(tournament);
             }
-            catch (Exception ex)
-            {
 
-                TempData["Error"] = $"Ошибка при получении турнира: {ex.Message}";
-                return RedirectToAction(nameof(Index));
-            }
+            return View(dto);
         }
-        
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
