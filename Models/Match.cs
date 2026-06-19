@@ -27,6 +27,8 @@ public class Match
     public MatchType Type { get; set; } = MatchType.Group;
     
     public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    public DateTime UpdatedAt { get; set; } = DateTime.Now;
     
     public MatchResult Result
     {

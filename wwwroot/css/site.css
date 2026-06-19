@@ -119,3 +119,8 @@ body {
     display: inline-block; 
     vertical-align: middle;
 }
+
+.top-rank-col {
+    width: 10%;
+    text-align: center;
+}

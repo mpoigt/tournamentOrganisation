@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using System.Data;
 using TournamentApp.Data;
 using TournamentApp.Models;
@@ -51,7 +52,11 @@ public class StatisticService : IStatisticService
 
     public async Task<List<HeadToHeadStatistics>> GetHeadToHeadStatisticsAsync()
     {
-        var headToHeadStats = new List<HeadToHeadStatistics>();
+        var headToHeadStats = await _context.HeadToHeadStatistics
+            .FromSqlRaw("EXEC GetHeadToHeadStatistics")
+            .ToListAsync();
+        return headToHeadStats;
+        //var headToHeadStats = new List<HeadToHeadStatistics>();
 
         using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
@@ -83,4 +88,5 @@ public class StatisticService : IStatisticService
 
         return headToHeadStats;
     }
+
 }

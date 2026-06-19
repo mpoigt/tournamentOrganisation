@@ -14,6 +14,7 @@ public class TournamentDbContext : DbContext
     public DbSet<Participant> Participants { get; set; }
     public DbSet<TournamentParticipant> TournamentParticipants { get; set; }
     public DbSet<Match> Matches { get; set; }
+    public DbSet<HeadToHeadStatistics> HeadToHeadStatistics { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,5 +67,9 @@ public class TournamentDbContext : DbContext
             .HasConversion(
                 x => x.Code,
                 x => TournamentType.FromCode(x));
+
+        modelBuilder.Entity<HeadToHeadStatistics>()
+            .HasNoKey()
+            .ToView(null);
     }
 }

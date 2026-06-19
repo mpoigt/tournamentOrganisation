@@ -6,6 +6,13 @@
     var groupMatches = Model.Where(m => m.Type == TournamentApp.Enums.MatchType.Group).ToList();
     var playoffMatches = Model.Where(m => m.Type == TournamentApp.Enums.MatchType.Playoff).ToList();
     var finalMatches = Model.Where(m => m.Type == TournamentApp.Enums.MatchType.Final).ToList();
+    var lastGroupUpdate = groupMatches.Any()
+        ? groupMatches.Max(m => m.UpdatedAt > m.CreatedAt ? m.UpdatedAt : m.CreatedAt)
+        : DateTime.MinValue;
+    var playoffCreationDate = playoffMatches.Any()
+        ? playoffMatches.First().CreatedAt
+        : DateTime.MaxValue;
+    var isPlayoffOutdated = playoffMatches.Any() && lastGroupUpdate > playoffCreationDate;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -14,7 +21,7 @@
         <h4 class="text-muted text-center">@tournament?.Name</h4>
     </div>
     <div>
-        @if (!tournament.PlayoffGenerated && groupMatches.Any(m => m.IsCompleted))
+        @if ((!tournament.PlayoffGenerated || isPlayoffOutdated) && groupMatches.Any(m => m.IsCompleted))
         {
             <form asp-action="GeneratePlayoff" asp-route-id="@tournament.Id" method="post" class="d-inline">
                 <button type="submit" class="btn btn-warning me-2">
@@ -41,6 +48,9 @@
             </form>
         }
         
+        <a asp-controller="Tournaments" asp-action="Edit" asp-route-id="@tournament.Id" class="btn btn-primary me-2">
+            <i class="bi bi-pencil"></i> Изменить турнир
+        </a>
 
         <a asp-action="Standings" asp-route-id="@tournament.Id" class="btn btn-success me-2">
             <i class="bi bi-trophy"></i> Турнирная таблица

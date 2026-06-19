@@ -62,6 +62,7 @@ public class MatchService : IMatchService
         command.Parameters.AddWithValue("@HomeScore", (object?)homeScore ?? DBNull.Value);
         command.Parameters.AddWithValue("@AwayScore", (object?)awayScore ?? DBNull.Value);
         command.Parameters.AddWithValue("@IsCompleted", isCompleted);
+        command.Parameters.AddWithValue("@UpdatedAt", DateTime.Now);
 
         using var reader = await command.ExecuteReaderAsync();
         await reader.ReadAsync();

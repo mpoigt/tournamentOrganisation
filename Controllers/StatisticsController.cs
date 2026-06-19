@@ -24,13 +24,25 @@ namespace TournamentApp.Controllers
                 var stats = await _statisticService.GetParticipantStatisticsAsync(participant.Id);
                 participantStats.Add(stats);
             }
-            
-            ViewBag.ParticipantStatistics = participantStats;
-            
+  
             var headToHeadStats = await _statisticService.GetHeadToHeadStatisticsAsync();
-            ViewBag.HeadToHeadStatistics = headToHeadStats;
-            
-            return View();
+            var viewModel = new ViewModels.StatisticsIndexViewModel
+            {
+                ParticipantStats = participantStats,
+                HeadToHeadStats = headToHeadStats,
+
+                Top10Scored = participantStats
+                    .OrderByDescending(s => s.TotalGoalsScored)
+                    .Take(10)
+                    .ToList(),
+
+                Top10Conceded = participantStats
+                    .OrderByDescending(s => s.TotalGoalsConceded)
+                    .Take(10)
+                    .ToList()
+            };
+
+            return View(viewModel);
         }
         
         public async Task<IActionResult> Participant(int id)

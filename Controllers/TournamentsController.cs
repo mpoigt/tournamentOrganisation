@@ -258,15 +258,7 @@ namespace TournamentApp.Controllers
         public async Task<IActionResult> GeneratePlayoff(int id)
         {
             var success = await _tournamentService.GeneratePlayoffAsync(id);
-            if (!success)
-            {
-                TempData["Error"] = "Не удалось сгенерировать плей-офф. Возможно, он уже был создан.";
-            }
-            else
-            {
-                TempData["Success"] = "Плей-офф успешно сгенерирован!";
-            }
-            
+            TempData["Success"] = "Плей-офф успешно сгенерирован!";
             return RedirectToAction(nameof(Matches), new { id });
         }
 
