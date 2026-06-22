@@ -10,6 +10,9 @@ builder.Services.AddDbContext<TournamentDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<ITournamentService, TournamentService>();
+builder.Services.AddScoped<IMatchService, MatchService>();
+builder.Services.AddScoped<IStatisticService, StatisticService>();
+builder.Services.AddScoped<IParticipantService, ParticipantService>();
 
 var app = builder.Build();
 

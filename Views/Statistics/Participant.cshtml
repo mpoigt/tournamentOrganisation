@@ -115,9 +115,10 @@ else
                         <h3 class="text-success">@Model.WinPercentage.ToString("F1")%</h3>
                         <p class="text-muted mb-2">Процент побед</p>
                         <div class="progress">
-                            <div class="progress-bar bg-success" role="progressbar" 
-                                 style="width: @(Model.WinPercentage)%" 
-                                 aria-valuenow="@Model.WinPercentage" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                 style="width: @(Model.WinPercentage.ToString(System.Globalization.CultureInfo.InvariantCulture))%"
+                                 aria-valuenow="@(Model.WinPercentage.ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                 aria-valuemin="0" aria-valuemax="100">
                             </div>
                         </div>
                     </div>

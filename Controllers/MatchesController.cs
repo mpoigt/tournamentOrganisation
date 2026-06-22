@@ -6,15 +6,17 @@ namespace TournamentApp.Controllers
     public class MatchesController : Controller
     {
         private readonly ITournamentService _tournamentService;
+        private readonly IMatchService _matchService;
 
-        public MatchesController(ITournamentService tournamentService)
+        public MatchesController(ITournamentService tournamentService, IMatchService matchService)
         {
             _tournamentService = tournamentService;
+            _matchService = matchService;
         }
 
         public async Task<IActionResult> Edit(int id)
         {
-            var match = await _tournamentService.GetMatchByIdAsync(id);
+            var match = await _matchService.GetMatchByIdAsync(id);
             if (match == null)
             {
                 return NotFound();
@@ -33,7 +35,7 @@ namespace TournamentApp.Controllers
         {
             bool isCompletedBool = !string.IsNullOrEmpty(isCompleted) && isCompleted == "true";
 
-            var match = await _tournamentService.GetMatchByIdAsync(id);
+            var match = await _matchService.GetMatchByIdAsync(id);
             if (match == null)
             {
                 return NotFound();
@@ -41,7 +43,7 @@ namespace TournamentApp.Controllers
 
             var tournamentId = match.TournamentId;
 
-            var success = await _tournamentService.UpdateMatchResultAsync(id, homeScore, awayScore, isCompletedBool);
+            var success = await _matchService.UpdateMatchResultAsync(id, homeScore, awayScore, isCompletedBool);
             if (!success)
             {
                 return NotFound();

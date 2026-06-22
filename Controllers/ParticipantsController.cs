@@ -6,16 +6,18 @@ namespace TournamentApp.Controllers
 {
     public class ParticipantsController : Controller
     {
-        private readonly ITournamentService _tournamentService;
+        private readonly IStatisticService _statisticService;
+        private readonly IParticipantService _participantService;
         
-        public ParticipantsController(ITournamentService tournamentService)
+        public ParticipantsController(IStatisticService statisticService, IParticipantService participantService)
         {
-            _tournamentService = tournamentService;
+            _statisticService = statisticService;
+            _participantService = participantService;
         }
         
         public async Task<IActionResult> Index()
         {
-            var participants = await _tournamentService.GetAllParticipantsAsync();
+            var participants = await _participantService.GetAllParticipantsAsync();
             return View(participants);
         }
         
@@ -30,7 +32,7 @@ namespace TournamentApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _tournamentService.CreateParticipantAsync(participant);
+                await _participantService.CreateParticipantAsync(participant);
                 return RedirectToAction(nameof(Index));
             }
             return View(participant);
@@ -38,7 +40,7 @@ namespace TournamentApp.Controllers
         
         public async Task<IActionResult> Edit(int id)
         {
-            var participant = await _tournamentService.GetParticipantByIdAsync(id);
+            var participant = await _participantService.GetParticipantByIdAsync(id);
             if (participant == null)
             {
                 return NotFound();
@@ -57,7 +59,7 @@ namespace TournamentApp.Controllers
             
             if (ModelState.IsValid)
             {
-                var success = await _tournamentService.UpdateParticipantAsync(id, participant);
+                var success = await _participantService.UpdateParticipantAsync(id, participant);
                 if (success)
                 {
                     return RedirectToAction(nameof(Index));
@@ -72,7 +74,7 @@ namespace TournamentApp.Controllers
         
         public async Task<IActionResult> Delete(int id)
         {
-            var participant = await _tournamentService.GetParticipantByIdAsync(id);
+            var participant = await _participantService.GetParticipantByIdAsync(id);
             if (participant == null)
             {
                 return NotFound();
@@ -84,7 +86,7 @@ namespace TournamentApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var success = await _tournamentService.DeleteParticipantAsync(id);
+            var success = await _participantService.DeleteParticipantAsync(id);
             if (!success)
             {
                 TempData["Error"] = "Невозможно удалить участника с завершенными матчами";
@@ -96,8 +98,8 @@ namespace TournamentApp.Controllers
         
         public async Task<IActionResult> Statistics(int id)
         {
-            var stats = await _tournamentService.GetParticipantStatisticsAsync(id);
-            var participant = await _tournamentService.GetParticipantByIdAsync(id);
+            var stats = await _statisticService.GetParticipantStatisticsAsync(id);
+            var participant = await _participantService.GetParticipantByIdAsync(id);
             
             if (participant == null)
             {

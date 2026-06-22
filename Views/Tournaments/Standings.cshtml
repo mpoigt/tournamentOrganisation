@@ -1,7 +1,7 @@
 @{
     ViewData["Title"] = $"Турнирная таблица - {ViewBag.Tournament.Name}";
     var tournament = ViewBag.Tournament as TournamentApp.Models.Tournament;
-    var standings = ViewBag.Standings as List<TournamentApp.Services.ParticipantStanding>;
+    var standings = ViewBag.Standings as List<TournamentApp.ViewModels.ParticipantStandingViewModel>;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -10,9 +10,14 @@
         <h4 class="text-muted">@tournament?.Name</h4>
     </div>
     <div>
-        <a asp-action="Matches" asp-route-id="@tournament.Id" class="btn btn-info">
+        <a asp-controller="Tournaments" asp-action="Edit" asp-route-id="@tournament.Id" class="btn btn-primary me-2">
+            <i class="bi bi-pencil"></i> Изменить турнир
+        </a>
+
+        <a asp-action="Matches" asp-route-id="@tournament.Id" class="btn btn-info me-2 text-white">
             <i class="bi bi-list-check"></i> Матчи турнира
         </a>
+        
         <a asp-action="Index" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Назад к турнирам
         </a>
