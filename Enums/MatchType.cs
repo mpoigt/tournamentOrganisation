@@ -4,5 +4,6 @@ public enum MatchType
 {
     Group,
     Playoff,
-    Final
+    Final,
+    ThirdPlace
 }

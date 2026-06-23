@@ -34,6 +34,12 @@
             <i class="bi bi-sort-down text-danger"></i> Топ-10 пропущенных
         </button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="bestmatches-tab" data-bs-toggle="tab" data-bs-target="#bestmatches"
+                type="button" role="tab" aria-controls="bestmatches" aria-selected="false">
+            <i class="bi bi-fire text-warning"></i> Топ-10 матчей
+        </button>
+    </li>
 </ul>
 
 
@@ -295,4 +301,53 @@
             </div>
         </div>
     </div>
+        <div class="tab-pane fade" id="bestmatches" role="tabpanel" aria-labelledby="bestmatches-tab">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-fire"></i> Самые результативные матчи турнира</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0 text-center align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Дата</th>
+                                    <th class="text-end">Участник 1</th>
+                                    <th class="text-center">Счет</th>
+                                    <th class="text-start">Участник 2</th>
+                                    <th class="text-center">Всего голов</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.MostProductiveMatches != null && Model.MostProductiveMatches.Any())
+                                {
+                                    foreach (var match in Model.MostProductiveMatches)
+                                    {
+                                        <tr>
+                                            <td class="text-muted">@match.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                        
+                                            <td class="text-end fw-bold">@match.HomeParticipant?.Name</td>
+                                            <td class="text-center fs-5 bg-light fw-bold px-3">
+                                                @match.HomeScore : @match.AwayScore
+                                            </td>
+                                            <td class="text-start fw-bold">@match.AwayParticipant?.Name</td>
+                                        
+                                            <td class="text-center text-danger fw-bold fs-5">
+                                                @(match.HomeScore + match.AwayScore)
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">Нет сыгранных матчей для отображения.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
 </div> 

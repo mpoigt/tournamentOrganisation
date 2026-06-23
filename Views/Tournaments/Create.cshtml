@@ -63,7 +63,26 @@
                         <span asp-validation-for="MatchesPerOpponent" class="text-danger"></span>
                         <div class="form-text">Укажите количество матчей между каждой парой участников</div>
                     </div>
-                    
+
+                    <div class="mb-3">
+                        <label asp-for="PlayOffMatches" class="form-label">Количество встреч в плей-офф *</label>
+                        <select asp-for="PlayOffMatches" class="form-select">
+                            <option value="1">1 встреча</option>
+                            <option value="2">2 встречи</option>
+                            <option value="3">3 встречи</option>
+                            <option value="4">4 встречи</option>
+                            <option value="5">5 встреч</option>
+                        </select>
+                        <span asp-validation-for="PlayOffMatches" class="text-danger"></span>
+                        <div class="form-text">Укажите количество матчей между каждой парой участников в плей-офф</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <input asp-for="IsThirdPlace" class="form-check-input" />
+                        <label asp-for="IsThirdPlace" class="form-check-label"></label>
+                        <span asp-validation-for="IsThirdPlace" class="text-danger"></span>
+                    </div>
+
                     <div class="mb-3">
                         <label asp-for="Description" class="form-label">Описание</label>
                         <textarea asp-for="Description" class="form-control" rows="3" placeholder="Описание турнира (необязательно)"></textarea>

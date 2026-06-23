@@ -7,4 +7,5 @@ public interface IStatisticService
     Task<ParticipantStatistics> GetParticipantStatisticsAsync(int participantId);
 
     Task<List<HeadToHeadStatistics>> GetHeadToHeadStatisticsAsync();
+    Task<List<Match>> GetHeadToHeadStatisticsBestAsync();
 }

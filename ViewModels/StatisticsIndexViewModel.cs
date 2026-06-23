@@ -8,4 +8,5 @@ public class StatisticsIndexViewModel
     public List<HeadToHeadStatistics> HeadToHeadStats { get; set; } = new();
     public List<ParticipantStatistics> Top10Scored { get; set; } = new();
     public List<ParticipantStatistics> Top10Conceded { get; set; } = new();
+    public List<Match> MostProductiveMatches { get; set; }
 }

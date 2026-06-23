@@ -3,16 +3,23 @@
 @{
     ViewData["Title"] = $"Матчи турнира {ViewBag.Tournament.Name}";
     var tournament = ViewBag.Tournament as TournamentApp.Models.Tournament;
+    
     var groupMatches = Model.Where(m => m.Type == TournamentApp.Enums.MatchType.Group).ToList();
     var playoffMatches = Model.Where(m => m.Type == TournamentApp.Enums.MatchType.Playoff).ToList();
     var finalMatches = Model.Where(m => m.Type == TournamentApp.Enums.MatchType.Final).ToList();
+    var thirdPlaceMatches = Model.Where(m => m.Type == TournamentApp.Enums.MatchType.ThirdPlace).ToList();
+
     var lastGroupUpdate = groupMatches.Any()
         ? groupMatches.Max(m => m.UpdatedAt > m.CreatedAt ? m.UpdatedAt : m.CreatedAt)
         : DateTime.MinValue;
-    var playoffCreationDate = playoffMatches.Any()
-        ? playoffMatches.First().CreatedAt
+        
+    var allPostGroupMatches = playoffMatches.Concat(finalMatches).Concat(thirdPlaceMatches).ToList();
+    
+    var lastPlayoffUpdate = allPostGroupMatches.Any()
+        ? allPostGroupMatches.Max(m => m.UpdatedAt > m.CreatedAt ? m.UpdatedAt : m.CreatedAt)
         : DateTime.MaxValue;
-    var isPlayoffOutdated = playoffMatches.Any() && lastGroupUpdate > playoffCreationDate;
+        
+    var isPlayoffOutdated = allPostGroupMatches.Any() && lastGroupUpdate > lastPlayoffUpdate;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -21,15 +28,31 @@
         <h4 class="text-muted text-center">@tournament?.Name</h4>
     </div>
     <div>
-        @if ((!tournament.PlayoffGenerated || isPlayoffOutdated) && groupMatches.Any(m => m.IsCompleted))
+        @if (!tournament.PlayoffGenerated && groupMatches.Any(m => m.IsCompleted))
         {
-            <form asp-action="GeneratePlayoff" asp-route-id="@tournament.Id" method="post" class="d-inline">
+            <form asp-action="GeneratePlayoff"
+                  asp-route-id="@tournament.Id"
+                  asp-route-playOffMatches="@tournament.PlayOffMatches"
+                  method="post"
+                  class="d-inline">
                 <button type="submit" class="btn btn-warning me-2">
                     <i class="bi bi-star"></i> Генерировать плей-офф
                 </button>
             </form>
         }
-        
+        @if (isPlayoffOutdated)
+        {
+            <form asp-action="ReGeneratePlayoff"
+                  asp-route-id="@tournament.Id"
+                  asp-route-playOffMatches="@tournament.PlayOffMatches"
+                  method="post"
+                  class="d-inline">
+                <button type="submit" class="btn btn-warning me-2">
+                    <i class="bi bi-star"></i> Перегенерировать плей-офф
+                </button>
+            </form>
+        }
+
         @if (tournament.PlayoffGenerated && playoffMatches.Any(m => m.IsCompleted) && !finalMatches.Any())
         {
             <form asp-action="GenerateFinal" asp-route-id="@tournament.Id" method="post" class="d-inline">
@@ -95,33 +118,33 @@ else
             <div class="row">
                 @foreach (var match in groupMatches)
                 {
-                                    <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 match-card @(match.IsCompleted ? "border-success" : "border-warning")">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <span class="badge @(match.IsCompleted ? "bg-success" : "bg-warning")">
-                                @(match.IsCompleted ? "Завершен" : "Ожидает")
-                            </span>
-                            <small class="text-muted">Групповой матч #@match.Id</small>
-                        </div>
-                        <div class="card-body text-center">
-                            <div class="match-participants-row">
-                                <div class="match-participant-name">
-                                    <h6 class="mb-0">@match.HomeParticipant.Name</h6>
-                                </div>
-                                <div class="match-score">
-                                    @if (match.IsCompleted)
-                                    {
-                                        <h5 class="mb-0 fw-bold">@(match.HomeScore ?? 0) - @(match.AwayScore ?? 0)</h5>
-                                    }
-                                    else
-                                    {
-                                        <h5 class="mb-0 text-muted">vs</h5>
-                                    }
-                                </div>
-                                <div class="match-participant-name">
-                                    <h6 class="mb-0">@match.AwayParticipant.Name</h6>
-                                </div>
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 match-card @(match.IsCompleted ? "border-success" : "border-warning")">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span class="badge @(match.IsCompleted ? "bg-success" : "bg-warning")">
+                                    @(match.IsCompleted ? "Завершен" : "Ожидает")
+                                </span>
+                                <small class="text-muted">Групповой матч #@match.Id</small>
                             </div>
+                            <div class="card-body text-center">
+                                <div class="match-participants-row">
+                                    <div class="match-participant-name">
+                                        <h6 class="mb-0">@match.HomeParticipant.Name</h6>
+                                    </div>
+                                    <div class="match-score">
+                                        @if (match.IsCompleted)
+                                        {
+                                            <h5 class="mb-0 fw-bold">@(match.HomeScore ?? 0) - @(match.AwayScore ?? 0)</h5>
+                                        }
+                                        else
+                                        {
+                                            <h5 class="mb-0 text-muted">vs</h5>
+                                        }
+                                    </div>
+                                    <div class="match-participant-name">
+                                        <h6 class="mb-0">@match.AwayParticipant.Name</h6>
+                                    </div>
+                                </div>
                                 
                                 @if (match.IsCompleted)
                                 {
@@ -148,20 +171,23 @@ else
                                         {
                                             @if (match.PlayedAt.HasValue)
                                             {
-                                                <i class="bi bi-calendar"></i> @match.PlayedAt.Value.ToString("dd.MM.yyyy HH:mm")
+                                                <i class="bi bi-calendar"></i> 
+                                                @match.PlayedAt.Value.ToString("dd.MM.yyyy HH:mm")
                                             }
                                             else
                                             {
-                                                <i class="bi bi-check-circle"></i> @("Завершен")
+                                                <i class="bi bi-check-circle"></i> 
+                                                @("Завершен")
                                             }
                                         }
                                         else
                                         {
-                                            <i class="bi bi-clock"></i> @("Не сыгран")
+                                            <i class="bi bi-clock"></i> 
+                                            @("Не сыгран")
                                         }
                                     </small>
-                                    <a asp-controller="Matches" asp-action="Edit" asp-route-id="@match.Id" 
-                                       class="btn btn-outline-primary btn-sm">
+                                    <a asp-controller="Matches" asp-action="Edit" asp-route-id="@match.Id"
+                                           class="btn btn-outline-primary btn-sm">
                                         <i class="bi bi-pencil"></i> Редактировать
                                     </a>
                                 </div>
@@ -182,33 +208,33 @@ else
             <div class="row justify-content-center">
                 @foreach (var match in playoffMatches)
                 {
-                                    <div class="col-md-6 col-lg-5 mb-4">
-                    <div class="card h-100 match-card border-info @(match.IsCompleted ? "bg-light" : "")">
-                        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-                            <span class="badge @(match.IsCompleted ? "bg-success" : "bg-warning")">
-                                @(match.IsCompleted ? "Завершен" : "Ожидает")
-                            </span>
-                            <small>Полуфинал #@match.Id</small>
-                        </div>
-                        <div class="card-body text-center">
-                            <div class="match-participants-row">
-                                <div class="match-participant-name">
-                                    <h6 class="mb-0 fw-bold">@match.HomeParticipant.Name</h6>
-                                </div>
-                                <div class="match-score">
-                                    @if (match.IsCompleted)
-                                    {
-                                        <h4 class="mb-0 fw-bold text-primary">@(match.HomeScore ?? 0) - @(match.AwayScore ?? 0)</h4>
-                                    }
-                                    else
-                                    {
-                                        <h4 class="mb-0 text-muted">vs</h4>
-                                    }
-                                </div>
-                                <div class="match-participant-name">
-                                    <h6 class="mb-0 fw-bold">@match.AwayParticipant.Name</h6>
-                                </div>
+                    <div class="col-md-6 col-lg-5 mb-4">
+                        <div class="card h-100 match-card border-info @(match.IsCompleted ? "bg-light" : "")">
+                            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                <span class="badge @(match.IsCompleted ? "bg-success" : "bg-warning")">
+                                    @(match.IsCompleted ? "Завершен" : "Ожидает")
+                                </span>
+                                <small>Полуфинал #@match.Id</small>
                             </div>
+                            <div class="card-body text-center">
+                                <div class="match-participants-row">
+                                    <div class="match-participant-name">
+                                        <h6 class="mb-0 fw-bold">@match.HomeParticipant.Name</h6>
+                                    </div>
+                                    <div class="match-score">
+                                        @if (match.IsCompleted)
+                                        {
+                                            <h4 class="mb-0 fw-bold text-primary">@(match.HomeScore ?? 0) - @(match.AwayScore ?? 0)</h4>
+                                        }
+                                        else
+                                        {
+                                            <h4 class="mb-0 text-muted">vs</h4>
+                                        }
+                                    </div>
+                                    <div class="match-participant-name">
+                                        <h6 class="mb-0 fw-bold">@match.AwayParticipant.Name</h6>
+                                    </div>
+                                </div>
                                 
                                 @if (match.IsCompleted)
                                 {
@@ -235,20 +261,23 @@ else
                                         {
                                             @if (match.PlayedAt.HasValue)
                                             {
-                                                <i class="bi bi-calendar"></i> @match.PlayedAt.Value.ToString("dd.MM.yyyy HH:mm")
+                                                <i class="bi bi-calendar"></i> 
+                                                @match.PlayedAt.Value.ToString("dd.MM.yyyy HH:mm")
                                             }
                                             else
                                             {
-                                                <i class="bi bi-check-circle"></i> @("Завершен")
+                                                <i class="bi bi-check-circle"></i> 
+                                                @("Завершен")
                                             }
                                         }
                                         else
                                         {
-                                            <i class="bi bi-clock"></i> @("Не сыгран")
+                                            <i class="bi bi-clock"></i> 
+                                            @("Не сыгран")
                                         }
                                     </small>
-                                    <a asp-controller="Matches" asp-action="Edit" asp-route-id="@match.Id" 
-                                       class="btn btn-info btn-sm text-white">
+                                    <a asp-controller="Matches" asp-action="Edit" asp-route-id="@match.Id"
+                                           class="btn btn-info btn-sm text-white">
                                         <i class="bi bi-pencil"></i> Редактировать
                                     </a>
                                 </div>
@@ -259,12 +288,100 @@ else
             </div>
         </div>
     }
-
+    @if (thirdPlaceMatches.Any())
+    {
+        <div class="mb-5">
+            <h3 class="text-center mb-4 text-secondary">
+                <i class="bi bi-award-fill"></i> Матч за 3-е место
+            </h3>
+            <div class="row justify-content-center">
+                @foreach (var match in thirdPlaceMatches)
+                {
+                    <div class="col-md-8 col-lg-6 mb-4">
+                        <div class="card h-100 border-secondary @(match.IsCompleted ? "bg-light" : "")">
+                            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                                <span class="badge @(match.IsCompleted ? "bg-success" : "bg-warning text-dark")">
+                                    @(match.IsCompleted ? "Завершен" : "Ожидает")
+                                </span>
+                                <h5 class="mb-0">🥉 Бронзовый финал 🥉</h5>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="row align-items-center">
+                                    <div class="col-4">
+                                        <h5 class="mb-0 fw-bold">@match.HomeParticipant.Name</h5>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        @if (match.IsCompleted)
+                                        {
+                                            <h3 class="mb-0 fw-bold text-secondary" style="white-space: nowrap;">@(match.HomeScore ?? 0) - @(match.AwayScore ?? 0)</h3>
+                                        }
+                                        else
+                                        {
+                                            <h3 class="mb-0 text-muted">vs</h3>
+                                        }
+                                    </div>
+                                    <div class="col-4">
+                                        <h5 class="mb-0 fw-bold">@match.AwayParticipant.Name</h5>
+                                    </div>
+                                </div>
+                                
+                                @if (match.IsCompleted)
+                                {
+                                    <div class="mt-3">
+                                        @if (match.Result == TournamentApp.Enums.MatchResult.HomeWin)
+                                        {
+                                            <span class="badge bg-secondary fs-5 text-white">🥉 3 МЕСТО: @match.HomeParticipant.Name</span>
+                                        }
+                                        else if (match.Result == TournamentApp.Enums.MatchResult.AwayWin)
+                                        {
+                                            <span class="badge bg-secondary fs-5 text-white">🥉 3 МЕСТО: @match.AwayParticipant.Name</span>
+                                        }
+                                        else if (match.Result == TournamentApp.Enums.MatchResult.Draw)
+                                        {
+                                            <span class="badge bg-dark fs-5 text-white">⚖️ Ничья</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        @if (match.IsCompleted)
+                                        {
+                                            @if (match.PlayedAt.HasValue)
+                                            {
+                                                <i class="bi bi-calendar"></i>
+                                                @match.PlayedAt.Value.ToString("dd.MM.yyyy HH:mm")
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-check-circle"></i>
+                                                @("Завершен")
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-clock"></i>
+                                            @("Не сыгран")
+                                        }
+                                    </small>
+                                    <a asp-controller="Matches" asp-action="Edit" asp-route-id="@match.Id"
+                                           class="btn btn-secondary btn-sm">
+                                        <i class="bi bi-pencil"></i> Редактировать
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
     @if (finalMatches.Any())
     {
         <div class="mb-5">
             <h3 class="text-center mb-4">
-                <i class="bi bi-trophy-fill"></i> Финал
+                <i class="bi bi-trophy-fill text-warning"></i> Финал
             </h3>
             <div class="row justify-content-center">
                 @foreach (var match in finalMatches)
@@ -322,20 +439,23 @@ else
                                         {
                                             @if (match.PlayedAt.HasValue)
                                             {
-                                                <i class="bi bi-calendar"></i> @match.PlayedAt.Value.ToString("dd.MM.yyyy HH:mm")
+                                                <i class="bi bi-calendar"></i> 
+                                                @match.PlayedAt.Value.ToString("dd.MM.yyyy HH:mm")
                                             }
                                             else
                                             {
-                                                <i class="bi bi-check-circle"></i> @("Завершен")
+                                                <i class="bi bi-check-circle"></i> 
+                                                @("Завершен")
                                             }
                                         }
                                         else
                                         {
-                                            <i class="bi bi-clock"></i> @("Не сыгран")
+                                            <i class="bi bi-clock"></i> 
+                                            @("Не сыгран")
                                         }
                                     </small>
-                                    <a asp-controller="Matches" asp-action="Edit" asp-route-id="@match.Id" 
-                                       class="btn btn-warning btn-sm">
+                                    <a asp-controller="Matches" asp-action="Edit" asp-route-id="@match.Id"
+                                           class="btn btn-warning btn-sm">
                                         <i class="bi bi-pencil"></i> Редактировать
                                     </a>
                                 </div>
@@ -346,4 +466,4 @@ else
             </div>
         </div>
     }
-} 
+}

@@ -34,6 +34,10 @@ public class Tournament
     public int? WinnerId { get; set; }
     
     public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    public bool IsThirdPlace { get; set; } = false;
+
+    public int PlayOffMatches { get; set; } = 1;
     
     public ICollection<TournamentParticipant> TournamentParticipants { get; set; } = new List<TournamentParticipant>();
     public ICollection<Match> Matches { get; set; } = new List<Match>();

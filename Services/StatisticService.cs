@@ -56,37 +56,17 @@ public class StatisticService : IStatisticService
             .FromSqlRaw("EXEC GetHeadToHeadStatistics")
             .ToListAsync();
         return headToHeadStats;
-        //var headToHeadStats = new List<HeadToHeadStatistics>();
+    }
 
-        using var connection = new SqlConnection(_connectionString);
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("GetHeadToHeadStatistics", connection)
-        {
-            CommandType = CommandType.StoredProcedure
-        };
-
-        using var reader = await command.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
-        {
-            var stats = new HeadToHeadStatistics
-            {
-                Participant1Id = reader.GetInt32("Participant1Id"),
-                Participant1Name = reader.GetString("Participant1Name"),
-                Participant2Id = reader.GetInt32("Participant2Id"),
-                Participant2Name = reader.GetString("Participant2Name"),
-                TotalMatches = reader.GetInt32("TotalMatches"),
-                Participant1Wins = reader.GetInt32("Participant1Wins"),
-                Participant2Wins = reader.GetInt32("Participant2Wins"),
-                Draws = reader.GetInt32("Draws"),
-                Participant1Goals = reader.GetInt32("Participant1Goals"),
-                Participant2Goals = reader.GetInt32("Participant2Goals")
-            };
-
-            headToHeadStats.Add(stats);
-        }
-
-        return headToHeadStats;
+    public async Task<List<Match>> GetHeadToHeadStatisticsBestAsync()
+    {
+        return await _context.Matches
+                .Include(m => m.HomeParticipant)
+                .Include(m => m.AwayParticipant)
+                .Where(m => m.IsCompleted)
+                .OrderByDescending(m => (m.AwayScore + m.HomeScore))
+                .Take(10)
+                .ToListAsync();
     }
 
 }
