@@ -15,7 +15,9 @@ namespace TournamentApp.Services
 
         Task<bool> DeleteTournamentAsync(int id);
 
-        Task<bool> GeneratePlayoffAsync(int tournamentId);
+        Task<bool> GeneratePlayoffAsync(int tournamentId, int playOffMatches);
+
+        Task<bool> DeletePlayoffAsync(int tournamentId);
 
         Task<bool> GenerateFinalAsync(int tournamentId);
 

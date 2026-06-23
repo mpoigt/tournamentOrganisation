@@ -66,7 +66,9 @@ namespace TournamentApp.Controllers
                         Description = dto.Description,
                         MatchesPerOpponent = dto.MatchesPerOpponent,
                         Type = TournamentType.FromName(dto.Type),
-                        Gender = TeamGender.FromName(dto.Gender)
+                        Gender = TeamGender.FromName(dto.Gender),
+                        IsThirdPlace = dto.IsThirdPlace,
+                        PlayOffMatches = dto.PlayOffMatches
                     };
 
                     await _tournamentService.CreateTournamentAsync(tournament, dto.ParticipantIds, dto.TeamNames);
@@ -255,9 +257,9 @@ namespace TournamentApp.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> GeneratePlayoff(int id)
+        public async Task<IActionResult> GeneratePlayoff(int id, int playOffMatches)
         {
-            var success = await _tournamentService.GeneratePlayoffAsync(id);
+            var success = await _tournamentService.GeneratePlayoffAsync(id, playOffMatches);
             TempData["Success"] = "Плей-офф успешно сгенерирован!";
             return RedirectToAction(nameof(Matches), new { id });
         }
@@ -293,6 +295,16 @@ namespace TournamentApp.Controllers
                 TempData["Success"] = "Случайные результаты для групповых матчей успешно сгенерированы!";
             }
             
+            return RedirectToAction(nameof(Matches), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReGeneratePlayoff(int id, int playOffMatches)
+        {
+            var deleteTournament = await _tournamentService.DeletePlayoffAsync(id);
+            var success = await _tournamentService.GeneratePlayoffAsync(id, playOffMatches);
+            TempData["Success"] = "Плей-офф успешно перегенерирован!";
             return RedirectToAction(nameof(Matches), new { id });
         }
 

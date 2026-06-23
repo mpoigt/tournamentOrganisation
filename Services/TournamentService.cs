@@ -17,7 +17,7 @@ public class TournamentService : ITournamentService
     public TournamentService(TournamentDbContext context, IConfiguration configuration)
     {
         _context = context;
-        _connectionString = configuration.GetConnectionString("DefaultConnection") ?? 
+        _connectionString = configuration.GetConnectionString("DefaultConnection") ??
                            throw new ArgumentException("Connection string not found");
     }
 
@@ -62,6 +62,8 @@ public class TournamentService : ITournamentService
             createCommand.Parameters.AddWithValue("@MatchesPerOpponent", tournament.MatchesPerOpponent);
             createCommand.Parameters.AddWithValue("@Type", tournament.Type.Code);
             createCommand.Parameters.AddWithValue("@Gender", tournament.Gender.Code);
+            createCommand.Parameters.AddWithValue("@PlayOffMatches", tournament.PlayOffMatches);
+            createCommand.Parameters.AddWithValue("@IsThirdPlace", tournament.IsThirdPlace);
 
             using var reader = await createCommand.ExecuteReaderAsync();
             await reader.ReadAsync();
@@ -236,7 +238,7 @@ public class TournamentService : ITournamentService
         return standings;
     }
 
-    public async Task<bool> GeneratePlayoffAsync(int tournamentId)
+    public async Task<bool> GeneratePlayoffAsync(int tournamentId, int playOffMatches)
     {
         using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
@@ -246,6 +248,7 @@ public class TournamentService : ITournamentService
             CommandType = CommandType.StoredProcedure
         };
         command.Parameters.AddWithValue("@TournamentId", tournamentId);
+        command.Parameters.AddWithValue("@PlayOffMatches", playOffMatches);
 
         using var reader = await command.ExecuteReaderAsync();
         await reader.ReadAsync();
@@ -256,6 +259,30 @@ public class TournamentService : ITournamentService
             return false;
 
         return success == 1;
+    }
+
+    public async Task<bool> DeletePlayoffAsync(int tournamentId)
+    {
+        try
+        {
+            await _context.Matches
+                .Where(m => m.TournamentId == tournamentId &&
+                            (m.Type == TournamentApp.Enums.MatchType.Playoff || m.Type == TournamentApp.Enums.MatchType.Final))
+                .ExecuteDeleteAsync();
+
+            var tournament = await _context.Tournaments.FindAsync(tournamentId);
+            if (tournament != null)
+            {
+                tournament.PlayoffGenerated = false;
+                await _context.SaveChangesAsync();
+            }
+
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
     public async Task<bool> GenerateFinalAsync(int tournamentId)

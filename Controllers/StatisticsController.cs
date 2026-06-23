@@ -24,12 +24,14 @@ namespace TournamentApp.Controllers
                 var stats = await _statisticService.GetParticipantStatisticsAsync(participant.Id);
                 participantStats.Add(stats);
             }
-  
+
             var headToHeadStats = await _statisticService.GetHeadToHeadStatisticsAsync();
+            var headToHeadStatsBest = await _statisticService.GetHeadToHeadStatisticsBestAsync();
             var viewModel = new ViewModels.StatisticsIndexViewModel
             {
                 ParticipantStats = participantStats,
                 HeadToHeadStats = headToHeadStats,
+                MostProductiveMatches = headToHeadStatsBest,
 
                 Top10Scored = participantStats
                     .OrderByDescending(s => s.TotalGoalsScored)
