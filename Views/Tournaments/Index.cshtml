@@ -22,9 +22,18 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Турниры</h1>
-    <a asp-action="Create" class="btn btn-success">
-        <i class="bi bi-plus-circle"></i> Создать турнир
-    </a>
+    <div>
+        <button type="button" class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#filterModal">
+            <i class="bi bi-funnel"></i> Фильтр
+            @if (Context.Request.Query.Count > 0)
+            {
+                <span class="badge bg-primary rounded-pill ms-1"> </span>
+            }
+        </button>
+        <a asp-action="Create" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Создать турнир
+        </a>
+    </div>
 </div>
 
 @if (!Model.Any())
@@ -108,4 +117,64 @@ else
             </div>
         }
     </div>
+    
 } 
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="get" asp-action="Index">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="filterModalLabel"><i class="bi bi-funnel"></i> Фильтр турниров</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Дата начала (с)</label>
+                            <input type="date" name="DateFrom" class="form-control" value="@Context.Request.Query["DateFrom"]" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Дата конца (по)</label>
+                            <input type="date" name="DateTo" class="form-control" value="@Context.Request.Query["DateTo"]" />
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Статус турнира</label>
+                        <select name="IsCompleted" class="form-select">
+                            <option value="">Все</option>
+                            <option value="false" selected="@(Context.Request.Query["IsCompleted"] == "false" ? "selected" : null)">В процессе</option>
+                            <option value="true" selected="@(Context.Request.Query["IsCompleted"] == "true" ? "selected" : null)">Завершен</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Тип турнира</label>
+                        <select name="TournamentType" class="form-select">
+                            <option value="">Все типы</option>
+                            <option value="5 на 5" selected="@(Context.Request.Query["TournamentType"] == "5 на 5" ? "selected" : null)">5 на 5</option>
+                            <option value="5 на 5 с большими" selected="@(Context.Request.Query["TournamentType"] == "5 на 5 с большими" ? "selected" : null)">5 на 5 с большими</option>
+                            <option value="11 на 11" selected="@(Context.Request.Query["TournamentType"] == "11 на 11" ? "selected" : null)">11 на 11</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Тип команд (Пол)</label>
+                        <select name="TeamGender" class="form-select">
+                            <option value="">Любой</option>
+                            <option value="Мужчины" selected="@(Context.Request.Query["TeamGender"] == "Мужчины" ? "selected" : null)">Мужчины</option>
+                            <option value="Женщины" selected="@(Context.Request.Query["TeamGender"] == "Женщины" ? "selected" : null)">Женщины</option>
+                        </select>
+                    </div>
+                    
+                </div>
+                
+                <div class="modal-footer d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Очистить</a>
+                    <button type="submit" class="btn btn-primary">Применить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

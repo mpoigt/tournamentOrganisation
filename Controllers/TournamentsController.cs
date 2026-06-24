@@ -20,9 +20,10 @@ namespace TournamentApp.Controllers
             _matchService = matchService;
         }
         
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index([FromQuery] TournamentFilterDTO filter)
         {
-            var tournaments = await _tournamentService.GetAllTournamentsAsync();
+            var tournaments = await _tournamentService.GetAllTournamentsAsync(filter);
+            ViewBag.CurrentFilter = filter;
             return View(tournaments);
         }
         

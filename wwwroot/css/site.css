@@ -124,3 +124,45 @@ body {
     width: 10%;
     text-align: center;
 }
+
+.page-header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.btn-filter {
+    margin-right: 0.5rem;
+}
+
+.tournament-card {
+    height: 100%;
+}
+
+.tournament-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tournament-status-completed {
+    background-color: #d1e7dd; 
+    color: #0f5132;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.tournament-status-active {
+    background-color: #cff4fc;
+    color: #055160;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.filter-modal-footer {
+    display: flex;
+    justify-content: space-between;
+}

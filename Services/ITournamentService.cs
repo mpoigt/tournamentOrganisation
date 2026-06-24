@@ -1,3 +1,4 @@
+using TournamentApp.DTOs;
 using TournamentApp.Models;
 using TournamentApp.ViewModels;
 
@@ -5,7 +6,7 @@ namespace TournamentApp.Services
 {
     public interface ITournamentService
     {
-        Task<List<Tournament>> GetAllTournamentsAsync();
+        Task<List<Tournament>> GetAllTournamentsAsync(TournamentFilterDTO? filter = null);
 
         Task<Tournament?> GetTournamentByIdAsync(int id);
 
