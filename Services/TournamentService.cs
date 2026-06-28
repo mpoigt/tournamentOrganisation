@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using TournamentApp.Data;
+using TournamentApp.DTOs;
 using TournamentApp.Enums;
 using TournamentApp.Models;
 using TournamentApp.ViewModels;
@@ -22,14 +23,49 @@ public class TournamentService : ITournamentService
     }
 
 
-    public async Task<List<Tournament>> GetAllTournamentsAsync()
+    public async Task<List<Tournament>> GetAllTournamentsAsync(TournamentFilterDTO? filter = null)
     {
-        return await _context.Tournaments
-            .Include(x => x.TournamentParticipants)
-            .ThenInclude(x => x.Participant)
-            .Include(x => x.Winner)
-            .Include(x => x.Matches)
-            .ToListAsync();
+        var query = _context.Tournaments
+        .Include(x => x.TournamentParticipants)
+        .ThenInclude(x => x.Participant)
+        .Include(x => x.Winner)
+        .Include(x => x.Matches)
+        .AsQueryable();
+        if (filter != null)
+        {
+            if (filter.IsCompleted.HasValue)
+            {
+                query = query.Where(t => t.IsCompleted == filter.IsCompleted.Value);
+            }
+
+            if (filter.DateFrom.HasValue)
+            {
+                query = query.Where(t => t.StartDate >= filter.DateFrom.Value);
+            }
+
+            if (filter.DateTo.HasValue)
+            {
+                query = query.Where(t => t.StartDate <= filter.DateTo.Value);
+            }
+
+            if (!string.IsNullOrEmpty(filter.TournamentType))
+            {
+                query = query.Where(t => t.Type == TournamentType.FromName(filter.TournamentType));
+            }
+
+            if (!string.IsNullOrEmpty(filter.TeamGender))
+            {
+                query = query.Where(t => t.Gender == TeamGender.FromName(filter.TeamGender));
+            }
+
+            if (filter.ParticipantIds != null && filter.ParticipantIds.Any())
+            {
+                query = query.Where(t => t.TournamentParticipants
+                    .Any(tp => filter.ParticipantIds.Contains(tp.ParticipantId)));
+            }
+        }
+
+        return await query.ToListAsync();
     }
 
     public async Task<Tournament?> GetTournamentByIdAsync(int id)
