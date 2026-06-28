@@ -31,19 +31,10 @@ namespace TournamentApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, int? homeScore, int? awayScore, string isCompleted)
+        public async Task<IActionResult> Edit(int id, int? homeScore, int? awayScore, bool isCompleted)
         {
-            bool isCompletedBool = !string.IsNullOrEmpty(isCompleted) && isCompleted == "true";
+            var (success, tournamentId) = await _matchService.UpdateMatchResultAsync(id, homeScore, awayScore, isCompleted);
 
-            var match = await _matchService.GetMatchByIdAsync(id);
-            if (match == null)
-            {
-                return NotFound();
-            }
-
-            var tournamentId = match.TournamentId;
-
-            var success = await _matchService.UpdateMatchResultAsync(id, homeScore, awayScore, isCompletedBool);
             if (!success)
             {
                 return NotFound();

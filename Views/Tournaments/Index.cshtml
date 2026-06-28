@@ -38,9 +38,18 @@
 
 @if (!Model.Any())
 {
+    bool hasActiveFilters = Context.Request.Query.Any(q => !string.IsNullOrWhiteSpace(q.Value));
+
     <div class="alert alert-info">
         <h4 class="alert-heading">Турниры не найдены</h4>
-        <p>Пока не создано ни одного турнира. <a asp-action="Create" class="alert-link">Создайте первый турнир</a>.</p>
+        @if (hasActiveFilters)
+        {
+            <p>По вашим параметрам фильтрации не найдено ни одного турнира. Попробуйте сбросить или изменить фильтры.</p>
+        }
+        else
+        {
+            <p>Пока не создано ни одного турнира. <a asp-action="Create" class="alert-link">Создайте первый турнир</a>.</p>
+        }
     </div>
 }
 else

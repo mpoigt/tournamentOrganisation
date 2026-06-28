@@ -46,13 +46,14 @@ public class MatchService : IMatchService
         .FirstOrDefaultAsync(m => m.Id == matchId);
     }
 
-    public async Task<bool> UpdateMatchResultAsync(int matchId, int? homeScore, int? awayScore, bool isCompleted)
+    public async Task<(bool Success, int TournamentId)> UpdateMatchResultAsync(int matchId, int? homeScore, int? awayScore, bool isCompleted)
     {
+        var match = await GetMatchByIdAsync(matchId);
+
+        if (match == null) return (false, 0);
+
         using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
-
-        var match = await GetMatchByIdAsync(matchId);
-        if (match == null) return false;
 
         using var command = new SqlCommand("UpdateMatchResult", connection)
         {
@@ -76,7 +77,7 @@ public class MatchService : IMatchService
                 {
                     await _tournamentService.GenerateFinalAsync(match.TournamentId);
                 }
-                catch
+                catch (Exception ex)
                 {
                 }
             }
@@ -86,6 +87,6 @@ public class MatchService : IMatchService
             }
         }
 
-        return success;
+        return (success, match.TournamentId);
     }
 }
