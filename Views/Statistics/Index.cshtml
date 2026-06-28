@@ -11,13 +11,13 @@
 
 <ul class="nav nav-tabs nav-justified mb-4" id="statsTab" role="tablist">
     <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="participants-tab" data-bs-toggle="tab" data-bs-target="#participants" 
+        <button class="nav-link active" id="participants-tab" data-bs-toggle="tab" data-bs-target="#participants"
                 type="button" role="tab" aria-controls="participants" aria-selected="true">
-            <i class="bi bi-people"></i> Статистика участников
+            <i class="bi bi-people"></i> Участники
         </button>
     </li>
     <li class="nav-item" role="presentation">
-        <button class="nav-link" id="headtohead-tab" data-bs-toggle="tab" data-bs-target="#headtohead" 
+        <button class="nav-link" id="headtohead-tab" data-bs-toggle="tab" data-bs-target="#headtohead"
                 type="button" role="tab" aria-controls="headtohead" aria-selected="false">
             <i class="bi bi-arrows-collapse"></i> Личные встречи
         </button>
@@ -25,19 +25,31 @@
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="topscored-tab" data-bs-toggle="tab" data-bs-target="#topscored"
                 type="button" role="tab" aria-controls="topscored" aria-selected="false">
-            <i class="bi bi-sort-up text-success"></i> Топ-10 забитых
+            <i class="bi bi-sort-up text-success"></i> Забитые
         </button>
     </li>
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="topconceded-tab" data-bs-toggle="tab" data-bs-target="#topconceded"
                 type="button" role="tab" aria-controls="topconceded" aria-selected="false">
-            <i class="bi bi-sort-down text-danger"></i> Топ-10 пропущенных
+            <i class="bi bi-sort-down text-danger"></i> Пропущенные
         </button>
     </li>
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="bestmatches-tab" data-bs-toggle="tab" data-bs-target="#bestmatches"
                 type="button" role="tab" aria-controls="bestmatches" aria-selected="false">
-            <i class="bi bi-fire text-warning"></i> Топ-10 матчей
+            <i class="bi bi-fire text-warning"></i> Топ матчей
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="besthomematches-tab" data-bs-toggle="tab" data-bs-target="#besthomematches"
+                type="button" role="tab" aria-controls="besthomematches" aria-selected="false">
+            <i class="bi bi-house-door text-primary"></i> Топ хозяев
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="bestawaymatches-tab" data-bs-toggle="tab" data-bs-target="#bestawaymatches"
+                type="button" role="tab" aria-controls="bestawaymatches" aria-selected="false">
+            <i class="bi bi-airplane text-info"></i> Топ гостей
         </button>
     </li>
 </ul>
@@ -143,56 +155,95 @@
             <div class="row">
                 @foreach (var stats in Model.HeadToHeadStats.OrderByDescending(s => s.TotalMatches))
                 {
+                    double p1WinPercentage = stats.TotalMatches > 0 ? ((double)stats.Participant1Wins / stats.TotalMatches) * 100 : 0;
+                    double drawPercentage = stats.TotalMatches > 0 ? ((double)stats.Draws / stats.TotalMatches) * 100 : 0;
+                    double p2WinPercentage = stats.TotalMatches > 0 ? ((double)stats.Participant2Wins / stats.TotalMatches) * 100 : 0;
+                    var invCulture = System.Globalization.CultureInfo.InvariantCulture;
+
                     <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100">
+                        <div class="card h-100 d-flex flex-column">
                             <div class="card-header bg-info text-white text-center">
                                 <h6 class="mb-0">
-                                    <i class="bi bi-arrows-collapse"></i> 
+                                    <i class="bi bi-arrows-collapse"></i>
                                     @stats.Participant1Name vs @stats.Participant2Name
                                 </h6>
                             </div>
-                            <div class="card-body text-center">
-                                <div class="row align-items-center mb-3">
-                                    <div class="col-5">
-                                        <h6 class="fw-bold">@stats.Participant1Name</h6>
+                            <div class="card-body text-center d-flex flex-column justify-content-between">
+                
+                                <div>
+                                    <div class="row align-items-center mb-3">
+                                        <div class="col-5">
+                                            <h6 class="fw-bold mb-1">@stats.Participant1Name</h6>
+                                            <small class="text-success fw-bold">@p1WinPercentage.ToString("F1")%</small>
+                                        </div>
+                                        <div class="col-2">
+                                            <h4 class="text-primary mb-0">@stats.TotalMatches</h4>
+                                            <small class="text-muted" style="font-size: 0.75rem;">матчей</small>
+                                        </div>
+                                        <div class="col-5">
+                                            <h6 class="fw-bold mb-1">@stats.Participant2Name</h6>
+                                            <small class="text-primary fw-bold">@p2WinPercentage.ToString("F1")%</small>
+                                        </div>
                                     </div>
-                                    <div class="col-2">
-                                        <h4 class="text-primary">@stats.TotalMatches</h4>
-                                        <small class="text-muted">матчей</small>
-                                    </div>
-                                    <div class="col-5">
-                                        <h6 class="fw-bold">@stats.Participant2Name</h6>
-                                    </div>
-                                </div>
                                 
-                                <div class="row text-center mb-3">
-                                    <div class="col-4">
-                                        <h5 class="text-success">@stats.Participant1Wins</h5>
-                                        <small class="text-muted">Побед</small>
+                                    <div class="row text-center mb-3">
+                                        <div class="col-4">
+                                            <h5 class="text-success mb-0">@stats.Participant1Wins</h5>
+                                            <small class="text-muted">Побед</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <h5 class="text-warning mb-0">@stats.Draws</h5>
+                                            <small class="text-muted">Ничьи</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <h5 class="text-success mb-0">@stats.Participant2Wins</h5>
+                                            <small class="text-muted">Побед</small>
+                                        </div>
                                     </div>
-                                    <div class="col-4">
-                                        <h5 class="text-warning">@stats.Draws</h5>
-                                        <small class="text-muted">Ничьи</small>
-                                    </div>
-                                    <div class="col-4">
-                                        <h5 class="text-success">@stats.Participant2Wins</h5>
-                                        <small class="text-muted">Побед</small>
-                                    </div>
-                                </div>
                                 
-                                <div class="row text-center">
-                                    <div class="col-5">
-                                        <h6 class="text-primary">@stats.Participant1Goals</h6>
-                                        <small class="text-muted">голов</small>
-                                    </div>
-                                    <div class="col-2">
-                                        <h6 class="text-muted">:</h6>
-                                    </div>
-                                    <div class="col-5">
-                                        <h6 class="text-primary">@stats.Participant2Goals</h6>
-                                        <small class="text-muted">голов</small>
+                                    <div class="row text-center mb-2">
+                                        <div class="col-5">
+                                            <h6 class="text-primary mb-0">@stats.Participant1Goals</h6>
+                                            <small class="text-muted">голов</small>
+                                        </div>
+                                        <div class="col-2">
+                                            <h6 class="text-muted">:</h6>
+                                        </div>
+                                        <div class="col-5">
+                                            <h6 class="text-primary mb-0">@stats.Participant2Goals</h6>
+                                            <small class="text-muted">голов</small>
+                                        </div>
                                     </div>
                                 </div>
+
+                                <div class="mt-auto pt-3">
+                                    <div class="progress" style="height: 12px; border-radius: 6px;">
+                                        @if (stats.TotalMatches > 0)
+                                        {
+                                            <div class="progress-bar bg-success" role="progressbar"
+                                                 style="width: @(p1WinPercentage.ToString(invCulture))%"
+                                                 aria-valuenow="@(p1WinPercentage.ToString(invCulture))" aria-valuemin="0" aria-valuemax="100"
+                                                 data-bs-toggle="tooltip" title="Победы @stats.Participant1Name"></div>
+                            
+                                            <div class="progress-bar bg-secondary" role="progressbar"
+                                                 style="width: @(drawPercentage.ToString(invCulture))%"
+                                                 aria-valuenow="@(drawPercentage.ToString(invCulture))" aria-valuemin="0" aria-valuemax="100"
+                                                 data-bs-toggle="tooltip" title="Ничьи"></div>
+                            
+                                            <div class="progress-bar bg-primary" role="progressbar"
+                                                 style="width: @(p2WinPercentage.ToString(invCulture))%"
+                                                 aria-valuenow="@(p2WinPercentage.ToString(invCulture))" aria-valuemin="0" aria-valuemax="100"
+                                                 data-bs-toggle="tooltip" title="Победы @stats.Participant2Name"></div>
+                                        }
+                                        else
+                                        {
+                                            <div class="progress-bar bg-light text-muted w-100" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                                                <small>Нет сыгранных матчей</small>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -301,17 +352,35 @@
             </div>
         </div>
     </div>
-        <div class="tab-pane fade" id="bestmatches" role="tabpanel" aria-labelledby="bestmatches-tab">
-            <div class="card">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0"><i class="bi bi-fire"></i> Самые результативные матчи турнира</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
+
+    <div class="tab-pane fade" id="bestmatches" role="tabpanel" aria-labelledby="bestmatches-tab">
+        <div class="card">
+            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-fire"></i> Самые результативные матчи (Всего голов)</h5>
+            
+                <select id="tournamentTypeFilter" class="form-select form-select-sm w-auto fw-bold" onchange="filterMatches(this.value, 'best-matches-container', 'matches-container')">
+                    @foreach (var type in TournamentApp.Enums.TournamentType.All)
+                    {
+                        <option value="@type.Code">@type.Name</option>
+                    }
+                </select>
+            </div>
+        
+            <div class="card-body p-0">
+                @foreach (var tType in TournamentApp.Enums.TournamentType.All)
+                {
+                    var matchesForType = Model.MostProductiveMatches
+                        .Where(m => m.Tournament?.Type?.Code == tType.Code)
+                        .OrderByDescending(m => (m.HomeScore ?? 0) + (m.AwayScore ?? 0))
+                        .Take(10)
+                        .ToList();
+
+                    <div class="table-responsive best-matches-container" id="matches-container-@tType.Code" style="display: none;">
                         <table class="table table-hover table-striped mb-0 text-center align-middle">
                             <thead class="table-light">
                                 <tr>
                                     <th>Дата</th>
+                                    <th>Турнир</th>
                                     <th class="text-end">Участник 1</th>
                                     <th class="text-center">Счет</th>
                                     <th class="text-start">Участник 2</th>
@@ -319,19 +388,18 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @if (Model.MostProductiveMatches != null && Model.MostProductiveMatches.Any())
+                                @if (matchesForType.Any())
                                 {
-                                    foreach (var match in Model.MostProductiveMatches)
+                                    foreach (var match in matchesForType)
                                     {
                                         <tr>
                                             <td class="text-muted">@match.CreatedAt.ToString("dd.MM.yyyy")</td>
-                                        
+                                            <td class="fw-bold text-primary">@match.Tournament?.Name</td>
                                             <td class="text-end fw-bold">@match.HomeParticipant?.Name</td>
                                             <td class="text-center fs-5 bg-light fw-bold px-3">
                                                 @match.HomeScore : @match.AwayScore
                                             </td>
                                             <td class="text-start fw-bold">@match.AwayParticipant?.Name</td>
-                                        
                                             <td class="text-center text-danger fw-bold fs-5">
                                                 @(match.HomeScore + match.AwayScore)
                                             </td>
@@ -341,13 +409,180 @@
                                 else
                                 {
                                     <tr>
-                                        <td colspan="5" class="text-center py-4">Нет сыгранных матчей для отображения.</td>
+                                        <td colspan="6" class="text-center py-4">Нет сыгранных матчей для данного типа турнира.</td>
                                     </tr>
                                 }
                             </tbody>
                         </table>
                     </div>
-                </div>
+                }
             </div>
         </div>
-</div> 
+    </div>
+
+    <div class="tab-pane fade" id="besthomematches" role="tabpanel" aria-labelledby="besthomematches-tab">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-house-door"></i> Топ-10: Забили хозяева</h5>
+            
+                <select id="homeTournamentTypeFilter" class="form-select form-select-sm w-auto fw-bold" onchange="filterMatches(this.value, 'home-matches-container', 'home-matches-container')">
+                    @foreach (var type in TournamentApp.Enums.TournamentType.All)
+                    {
+                        <option value="@type.Code">@type.Name</option>
+                    }
+                </select>
+            </div>
+        
+            <div class="card-body p-0">
+                @foreach (var tType in TournamentApp.Enums.TournamentType.All)
+                {
+                    var homeMatchesForType = Model.MostProductiveMatches
+                        .Where(m => m.Tournament?.Type?.Code == tType.Code)
+                        .OrderByDescending(m => m.HomeScore ?? 0)
+                        .Take(10)
+                        .ToList();
+
+                    <div class="table-responsive home-matches-container" id="home-matches-container-@tType.Code" style="display: none;">
+                        <table class="table table-hover table-striped mb-0 text-center align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Турнир</th>
+                                    <th class="text-end">Хозяева</th>
+                                    <th class="text-center">Счет</th>
+                                    <th class="text-start">Гости</th>
+                                    <th class="text-center text-primary">Голы хозяев</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (homeMatchesForType.Any())
+                                {
+                                    foreach (var match in homeMatchesForType)
+                                    {
+                                        <tr>
+                                            <td class="text-muted">@match.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                            <td class="fw-bold text-primary">@match.Tournament?.Name</td>
+                                            <td class="text-end fw-bold">@match.HomeParticipant?.Name</td>
+                                            <td class="text-center fs-5 bg-light fw-bold px-3">
+                                                @match.HomeScore : @match.AwayScore
+                                            </td>
+                                            <td class="text-start text-muted">@match.AwayParticipant?.Name</td>
+                                            <td class="text-center text-primary fw-bold fs-5">
+                                                @match.HomeScore
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">Нет сыгранных матчей для данного типа турнира.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="bestawaymatches" role="tabpanel" aria-labelledby="bestawaymatches-tab">
+        <div class="card">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-airplane"></i> Топ-10: Забили гости</h5>
+            
+                <select id="awayTournamentTypeFilter" class="form-select form-select-sm w-auto fw-bold" onchange="filterMatches(this.value, 'away-matches-container', 'away-matches-container')">
+                    @foreach (var type in TournamentApp.Enums.TournamentType.All)
+                    {
+                        <option value="@type.Code">@type.Name</option>
+                    }
+                </select>
+            </div>
+        
+            <div class="card-body p-0">
+                @foreach (var tType in TournamentApp.Enums.TournamentType.All)
+                {
+                    var awayMatchesForType = Model.MostProductiveMatches
+                        .Where(m => m.Tournament?.Type?.Code == tType.Code)
+                        .OrderByDescending(m => m.AwayScore ?? 0)
+                        .Take(10)
+                        .ToList();
+
+                    <div class="table-responsive away-matches-container" id="away-matches-container-@tType.Code" style="display: none;">
+                        <table class="table table-hover table-striped mb-0 text-center align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Турнир</th>
+                                    <th class="text-end">Хозяева</th>
+                                    <th class="text-center">Счет</th>
+                                    <th class="text-start">Гости</th>
+                                    <th class="text-center text-info">Голы гостей</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (awayMatchesForType.Any())
+                                {
+                                    foreach (var match in awayMatchesForType)
+                                    {
+                                        <tr>
+                                            <td class="text-muted">@match.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                            <td class="fw-bold text-primary">@match.Tournament?.Name</td>
+                                            <td class="text-end text-muted">@match.HomeParticipant?.Name</td>
+                                            <td class="text-center fs-5 bg-light fw-bold px-3">
+                                                @match.HomeScore : @match.AwayScore
+                                            </td>
+                                            <td class="text-start fw-bold">@match.AwayParticipant?.Name</td>
+                                            <td class="text-center text-info fw-bold fs-5">
+                                                @match.AwayScore
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">Нет сыгранных матчей для данного типа турнира.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function filterMatches(typeCode, containerClass, prefix) {
+            document.querySelectorAll('.' + containerClass).forEach(function(el) {
+                el.style.display = 'none';
+            });
+            
+            var selectedContainer = document.getElementById(prefix + '-' + typeCode);
+            if (selectedContainer) {
+                selectedContainer.style.display = 'block';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var bestMatchesFilter = document.getElementById('tournamentTypeFilter');
+            if (bestMatchesFilter) {
+                filterMatches(bestMatchesFilter.value, 'best-matches-container', 'matches-container');
+            }
+
+            var homeMatchesFilter = document.getElementById('homeTournamentTypeFilter');
+            if (homeMatchesFilter) {
+                filterMatches(homeMatchesFilter.value, 'home-matches-container', 'home-matches-container');
+            }
+
+            var awayMatchesFilter = document.getElementById('awayTournamentTypeFilter');
+            if (awayMatchesFilter) {
+                filterMatches(awayMatchesFilter.value, 'away-matches-container', 'away-matches-container');
+            }
+        });
+    </script>
+}

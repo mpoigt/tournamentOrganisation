@@ -175,11 +175,7 @@ namespace TournamentApp.Controllers
                     return NotFound();
                 }
 
-                existingTournament.Name = dto.Name;
-                existingTournament.StartDate = dto.StartDate;
-                existingTournament.Description = dto.Description;
-
-                var success = await _tournamentService.UpdateTournamentAsync(id, existingTournament);
+                var success = await _tournamentService.UpdateTournamentAsync(id, dto);
                 if (success)
                 {
                     return RedirectToAction(nameof(Index));

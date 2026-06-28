@@ -12,7 +12,7 @@ namespace TournamentApp.Services
 
         Task<Tournament> CreateTournamentAsync(Tournament tournament, List<int> participantIds, Dictionary<int, string> teamNames);
 
-        Task<bool> UpdateTournamentAsync(int id, Tournament tournament);
+        Task<bool> UpdateTournamentAsync(int id, EditTournamentDTO tournament);
 
         Task<bool> DeleteTournamentAsync(int id);
 

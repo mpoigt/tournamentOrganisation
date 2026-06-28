@@ -1,4 +1,4 @@
-using Microsoft.Data.SqlClient;
+    using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using TournamentApp.Data;
@@ -65,7 +65,7 @@ public class TournamentService : ITournamentService
             }
         }
 
-        return await query.ToListAsync();
+        return await query.OrderByDescending(t => t.Id).ToListAsync();
     }
 
     public async Task<Tournament?> GetTournamentByIdAsync(int id)
@@ -144,15 +144,25 @@ public class TournamentService : ITournamentService
         return tournament;
     }
 
-    public async Task<bool> UpdateTournamentAsync(int id, Tournament tournament)
+    public async Task<bool> UpdateTournamentAsync(int id, EditTournamentDTO tournament)
     {
         var rowsAffected = await _context.Tournaments
         .Where(t => t.Id == id)
         .ExecuteUpdateAsync(setters => setters
             .SetProperty(t => t.Name, tournament.Name)
             .SetProperty(t => t.StartDate, tournament.StartDate)
-            .SetProperty(t => t.EndDate, tournament.EndDate)
             .SetProperty(t => t.Description, tournament.Description));
+
+        if (tournament.Participants.All(kvp => !string.IsNullOrWhiteSpace(kvp.Value)))
+        {
+            foreach (var kvp in tournament.Participants)
+            {
+                await _context.TournamentParticipants
+                    .Where(tp => tp.TournamentId == id && tp.Participant.Name == kvp.Key)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(tp => tp.TeamName, kvp.Value));
+            }
+        }
 
         return rowsAffected > 0;
     }

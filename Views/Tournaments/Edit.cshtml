@@ -64,16 +64,14 @@
                             {
                                 foreach (var p in Model.Participants)
                                 {
+                                    var teamName = Model.Participants.ContainsKey(p.Key) ? Model.Participants[p.Key] : "";
                                     <li class="list-group-item d-flex align-items-center edit-participant-item">
-                                        <div class="edit-participant-name">
+                                        <div class="edit-participant-name me-3" style="min-width: 150px;">
                                             <i class="bi bi-person-fill text-secondary me-2"></i>
                                             @p.Key
                                         </div>
-                
-                                        <div class="edit-participant-team-container">
-                                            <span class="badge bg-primary rounded-pill edit-participant-badge" title="@p.Value">
-                                                @p.Value
-                                            </span>
+                                        <div class="edit-participant-team-container flex-grow-1">
+                                            <input type="text" class="form-control" name="Participants[@p.Key]" value="@teamName" placeholder="Введите название команды (необязательно)" />
                                         </div>
                                     </li>
                                 }
@@ -86,7 +84,7 @@
                         
                         <div class="form-text text-muted mt-2">
                             <i class="bi bi-info-circle"></i>
-                            Участников турнира нельзя изменить после создания. Для изменения состава создайте новый турнир.
+                            Состав участников изменить нельзя, но вы можете отредактировать названия их команд.
                         </div>
                     </div>
                     

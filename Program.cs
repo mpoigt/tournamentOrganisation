@@ -1,8 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using TournamentApp.Data;
 using TournamentApp.Services;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using TournamentApp.Validators;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters(); 
+builder.Services.AddValidatorsFromAssemblyContaining<CreateTournamentDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<EditTournamentDTOValidator>();
+
 
 builder.Services.AddControllersWithViews();
 
