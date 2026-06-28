@@ -3,25 +3,10 @@
     var match = ViewBag.Match as TournamentApp.Models.Match;
     var tournament = ViewBag.Tournament as TournamentApp.Models.Tournament;
     
-    // Ищем названия команд для хозяев и гостей
     var homeTeam = tournament?.TournamentParticipants?.FirstOrDefault(tp => tp.ParticipantId == match.HomeParticipantId)?.TeamName;
     var awayTeam = tournament?.TournamentParticipants?.FirstOrDefault(tp => tp.ParticipantId == match.AwayParticipantId)?.TeamName;
 }
 
-<style>
-    .participant-name-box {
-        min-height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-    }
-    
-    .participant-name-box h5 {
-        word-wrap: break-word;
-        hyphens: auto;
-    }
-</style>
 
 <div class="row">
     <div class="col-md-6 offset-md-3">

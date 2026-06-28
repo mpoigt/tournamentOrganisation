@@ -30,7 +30,7 @@ body {
   text-align: start;
 }
 
-/* Стили для выравнивания матчей */
+
 .match-participant {
   display: flex;
   align-items: center;
@@ -165,4 +165,38 @@ body {
 .filter-modal-footer {
     display: flex;
     justify-content: space-between;
+}
+
+.participant-name-box {
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+    .participant-name-box h5 {
+        word-wrap: break-word;
+        hyphens: auto;
+    }
+
+.score-nowrap {
+    white-space: nowrap;
+}
+
+.legend-color-box {
+    width: 20px;
+    height: 20px;
+}
+
+.legend-success {
+    background-color: #198754;
+}
+
+.legend-warning {
+    background-color: #ffc107;
+}
+
+.legend-danger {
+    background-color: #dc3545;
 }
