@@ -60,21 +60,12 @@ public class StatisticService : IStatisticService
 
     public async Task<List<Match>> GetHeadToHeadStatisticsBestAsync()
     {
-        var allCompletedMatches = await _context.Matches
+        return await _context.Matches
                 .Include(m => m.HomeParticipant)
                 .Include(m => m.AwayParticipant)
-                .Include(m => m.Tournament)
+                .Include(m => m.Tournament) 
                 .Where(m => m.IsCompleted)
-                .OrderByDescending(m => (m.AwayScore + m.HomeScore))
-                .Take(10)
                 .ToListAsync();
-
-        var topMatchesPerType = allCompletedMatches
-            .GroupBy(m => m.Tournament?.Type?.Code)
-            .SelectMany(g => g.OrderByDescending(m => (m.AwayScore ?? 0) + (m.HomeScore ?? 0)).Take(10))
-            .ToList();
-
-        return topMatchesPerType;
     }
 
 }

@@ -84,8 +84,8 @@ else
                             <p class="card-text mb-3">@tournament.Description</p>
                         }
 
-                        <div class="card bg-light border-0 mb-3 flex-grow-1">
-                            <div class="card-body p-2" style="max-height: 120px; overflow-y: auto;">
+                        <div class="card bg-light border-0 mb-3 flex-grow-1 d-flex flex-column" style="min-height: 0;">
+                            <div class="card-body p-2" style="overflow-y: auto;">
                                 <p class="mb-1 fw-bold" style="font-size: 0.85rem;">
                                     <i class="bi bi-people"></i> Участники (@tournament.TournamentParticipants.Count):
                                 </p>
