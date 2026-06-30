@@ -63,9 +63,8 @@ public class StatisticService : IStatisticService
         return await _context.Matches
                 .Include(m => m.HomeParticipant)
                 .Include(m => m.AwayParticipant)
+                .Include(m => m.Tournament) 
                 .Where(m => m.IsCompleted)
-                .OrderByDescending(m => (m.AwayScore + m.HomeScore))
-                .Take(10)
                 .ToListAsync();
     }
 

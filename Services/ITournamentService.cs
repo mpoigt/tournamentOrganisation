@@ -10,9 +10,11 @@ namespace TournamentApp.Services
 
         Task<Tournament?> GetTournamentByIdAsync(int id);
 
-        Task<Tournament> CreateTournamentAsync(Tournament tournament, List<int> participantIds, Dictionary<int, string> teamNames);
+        Task<EditTournamentDTO?> GetTournamentForEditAsync(int id);
 
-        Task<bool> UpdateTournamentAsync(int id, Tournament tournament);
+        Task<Tournament> CreateTournamentAsync(CreateTournamentDTO dto);
+
+        Task<bool> UpdateTournamentAsync(int id, EditTournamentDTO tournament);
 
         Task<bool> DeleteTournamentAsync(int id);
 

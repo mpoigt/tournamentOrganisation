@@ -1,6 +1,7 @@
-using Microsoft.Data.SqlClient;
+    using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using TournamentApp.Constants;
 using TournamentApp.Data;
 using TournamentApp.DTOs;
 using TournamentApp.Enums;
@@ -65,7 +66,7 @@ public class TournamentService : ITournamentService
             }
         }
 
-        return await query.ToListAsync();
+        return await query.OrderByDescending(t => t.Id).ToListAsync();
     }
 
     public async Task<Tournament?> GetTournamentByIdAsync(int id)
@@ -78,15 +79,38 @@ public class TournamentService : ITournamentService
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public async Task<Tournament> CreateTournamentAsync(Tournament tournament, List<int> participantIds, Dictionary<int, string> teamNames)
+    public async Task<Tournament> CreateTournamentAsync(CreateTournamentDTO dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Name))
+        {
+            dto.Name = dto.StartDate.ToString("dd.MM.yyyy");
+        }
+
+        if (dto.ParticipantIds == null ||
+            dto.ParticipantIds.Count < ValidationConstants.MinParticipants ||
+            dto.ParticipantIds.Count > ValidationConstants.MaxParticipants)
+        {
+            throw new ArgumentException($"Выберите от {ValidationConstants.MinParticipants} до {ValidationConstants.MaxParticipants} участников");
+        }
+
+        var tournament = new Tournament
+        {
+            Name = dto.Name,
+            StartDate = dto.StartDate,
+            Description = dto.Description,
+            MatchesPerOpponent = dto.MatchesPerOpponent,
+            Type = TournamentType.FromName(dto.Type),
+            Gender = TeamGender.FromName(dto.Gender),
+            IsThirdPlace = dto.IsThirdPlace,
+            PlayOffMatches = dto.PlayOffMatches
+        };
+
         using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
 
         using var transaction = connection.BeginTransaction();
         try
         {
-
             using var createCommand = new SqlCommand("CreateTournament", connection, transaction)
             {
                 CommandType = CommandType.StoredProcedure
@@ -106,11 +130,10 @@ public class TournamentService : ITournamentService
             tournament.Id = reader.GetInt32("TournamentId");
             reader.Close();
 
-
-            foreach (var pId in participantIds)
+            foreach (var pId in dto.ParticipantIds)
             {
-                string teamName = teamNames.ContainsKey(pId) && !string.IsNullOrWhiteSpace(teamNames[pId])
-                    ? teamNames[pId]
+                string teamName = dto.TeamNames != null && dto.TeamNames.ContainsKey(pId) && !string.IsNullOrWhiteSpace(dto.TeamNames[pId])
+                    ? dto.TeamNames[pId]
                     : "Без команды";
 
                 using var participantsCommand = new SqlCommand("AddSingleTournamentParticipant", connection, transaction)
@@ -123,7 +146,6 @@ public class TournamentService : ITournamentService
 
                 await participantsCommand.ExecuteNonQueryAsync();
             }
-
 
             using var matchesCommand = new SqlCommand("CreateTournamentMatches", connection, transaction)
             {
@@ -144,15 +166,28 @@ public class TournamentService : ITournamentService
         return tournament;
     }
 
-    public async Task<bool> UpdateTournamentAsync(int id, Tournament tournament)
+    public async Task<bool> UpdateTournamentAsync(int id, EditTournamentDTO tournament)
     {
         var rowsAffected = await _context.Tournaments
         .Where(t => t.Id == id)
         .ExecuteUpdateAsync(setters => setters
             .SetProperty(t => t.Name, tournament.Name)
             .SetProperty(t => t.StartDate, tournament.StartDate)
-            .SetProperty(t => t.EndDate, tournament.EndDate)
             .SetProperty(t => t.Description, tournament.Description));
+
+        if (tournament.Participants != null)
+        {
+            foreach (var kvp in tournament.Participants)
+            {
+                if (!string.IsNullOrWhiteSpace(kvp.Value))
+                {
+                    await _context.TournamentParticipants
+                        .Where(tp => tp.TournamentId == id && tp.Participant.Name == kvp.Key)
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(tp => tp.TeamName, kvp.Value));
+                }
+            }
+        }
 
         return rowsAffected > 0;
     }
@@ -272,6 +307,40 @@ public class TournamentService : ITournamentService
         }
 
         return standings;
+    }
+
+    public async Task<EditTournamentDTO?> GetTournamentForEditAsync(int id)
+    {
+        var tournament = await GetTournamentByIdAsync(id);
+
+        if (tournament is null)
+        {
+            return null;
+        }
+
+        var dto = new EditTournamentDTO
+        {
+            Id = tournament.Id,
+            Name = tournament.Name,
+            StartDate = tournament.StartDate,
+            Description = tournament.Description,
+            TypeDisplay = tournament.Type?.Name,
+            GenderDisplay = tournament.Gender?.Name,
+            Participants = new Dictionary<string, string>()
+        };
+
+        if (tournament.TournamentParticipants != null)
+        {
+            foreach (var tp in tournament.TournamentParticipants)
+            {
+                if (tp.Participant != null && !string.IsNullOrWhiteSpace(tp.Participant.Name))
+                {
+                    dto.Participants.TryAdd(tp.Participant.Name, tp.TeamName ?? "Без команды");
+                }
+            }
+        }
+
+        return dto;
     }
 
     public async Task<bool> GeneratePlayoffAsync(int tournamentId, int playOffMatches)

@@ -38,9 +38,18 @@
 
 @if (!Model.Any())
 {
+    bool hasActiveFilters = Context.Request.Query.Any(q => !string.IsNullOrWhiteSpace(q.Value));
+
     <div class="alert alert-info">
         <h4 class="alert-heading">Турниры не найдены</h4>
-        <p>Пока не создано ни одного турнира. <a asp-action="Create" class="alert-link">Создайте первый турнир</a>.</p>
+        @if (hasActiveFilters)
+        {
+            <p>По вашим параметрам фильтрации не найдено ни одного турнира. Попробуйте сбросить или изменить фильтры.</p>
+        }
+        else
+        {
+            <p>Пока не создано ни одного турнира. <a asp-action="Create" class="alert-link">Создайте первый турнир</a>.</p>
+        }
     </div>
 }
 else
@@ -49,10 +58,18 @@ else
         @foreach (var tournament in Model)
         {
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">@tournament.Name</h5>
-                        <p class="card-text text-muted">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0 pe-2">@tournament.Name</h5>
+                            <div class="text-end" style="min-width: 90px;">
+                                <span class="badge bg-secondary w-100 mb-1">@tournament.Type?.Name</span>
+                                <span class="badge bg-info text-dark w-100">@tournament.Gender?.Name</span>
+                            </div>
+                        </div>
+                        
+                        <p class="card-text text-muted mb-2">
                             <small>
                                 <i class="bi bi-calendar"></i> @tournament.StartDate.ToString("dd.MM.yyyy")
                                 @if (tournament.EndDate.HasValue)
@@ -61,34 +78,59 @@ else
                                 }
                             </small>
                         </p>
+                        
                         @if (!string.IsNullOrEmpty(tournament.Description))
                         {
-                            <p class="card-text">@tournament.Description</p>
+                            <p class="card-text mb-3">@tournament.Description</p>
                         }
-                        <p class="card-text">
-                            <small class="text-muted">
-                                <i class="bi bi-people"></i> @tournament.TournamentParticipants.Count участников
-                            </small>
-                        </p>
+
+                        <div class="card bg-light border-0 mb-3 flex-grow-1 d-flex flex-column" style="min-height: 0;">
+                            <div class="card-body p-2" style="overflow-y: auto;">
+                                <p class="mb-1 fw-bold" style="font-size: 0.85rem;">
+                                    <i class="bi bi-people"></i> Участники (@tournament.TournamentParticipants.Count):
+                                </p>
+                                @if (tournament.TournamentParticipants != null && tournament.TournamentParticipants.Any())
+                                {
+                                    <ul class="list-unstyled mb-0" style="font-size: 0.85rem;">
+                                        @foreach (var tp in tournament.TournamentParticipants)
+                                        {
+                                            <li class="mb-1">
+                                                <i class="bi bi-person text-secondary"></i> @tp.Participant?.Name
+                                                @if (!string.IsNullOrWhiteSpace(tp.TeamName))
+                                                {
+                                                    <span class="text-muted fst-italic"> — @tp.TeamName</span>
+                                                }
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <span class="text-muted" style="font-size: 0.85rem;">Нет участников</span>
+                                }
+                            </div>
+                        </div>
                         
                         @if (tournament.IsCompleted)
                         {
-                            <div class="alert alert-success py-2 mb-2">
+                            <div class="alert alert-success py-2 mb-3">
                                 <i class="bi bi-check-circle"></i> <strong>Турнир завершен</strong>
                                 @if (tournament.Winner != null)
                                 {
                                     <br>
-                                    <i class="bi bi-trophy text-warning"></i> <strong>Победитель:</strong> @tournament.Winner.Name
+                                    <i class="bi bi-trophy text-warning mt-1"></i> <strong>Победитель:</strong> 
+                                    @tournament.Winner.Name
                                 }
                             </div>
                         }
                         else
                         {
-                            <div class="alert alert-info py-2 mb-2">
+                            <div class="alert alert-info py-2 mb-3">
                                 <i class="bi bi-clock"></i> <strong>Турнир в процессе</strong>
                             </div>
                         }
-                        <div class="d-flex justify-content-between align-items-center">
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-auto">
                             <div class="btn-group" role="group">
                                 <a asp-action="Matches" asp-route-id="@tournament.Id" class="btn btn-outline-info btn-sm">
                                     <i class="bi bi-list-check"></i> Матчи
@@ -101,24 +143,29 @@ else
                                 <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                     <i class="bi bi-three-dots"></i>
                                 </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@tournament.Id">
-                                        <i class="bi bi-pencil"></i> Редактировать
-                                    </a></li>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" asp-action="Edit" asp-route-id="@tournament.Id">
+                                            <i class="bi bi-pencil"></i> Редактировать
+                                        </a>
+                                    </li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" asp-action="Delete" asp-route-id="@tournament.Id">
-                                        <i class="bi bi-trash"></i> Удалить
-                                    </a></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" asp-action="Delete" asp-route-id="@tournament.Id">
+                                            <i class="bi bi-trash"></i> Удалить
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
+                        
                     </div>
                 </div>
             </div>
         }
     </div>
-    
-} 
+}
+
 <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
